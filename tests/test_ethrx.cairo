@@ -1,7 +1,7 @@
 use alexandria_bytes::Bytes;
 use core::num::traits::Zero;
 use etheracts::ethrx::contract::Ethrx;
-use etheracts::ethrx::interface::{IEthrxABISafeDispatcher, IEthrxABISafeDispatcherTrait};
+use etheracts::ethrx::interface::{IEthrxSafeDispatcher, IEthrxSafeDispatcherTrait};
 use etheracts::types::engraving::{Artifact, Engraving, INITIAL_ENGRAVINGS};
 use openzeppelin_token::erc20::ERC20Component;
 use openzeppelin_token::erc20::interface::IERC20DispatcherTrait;
@@ -257,7 +257,7 @@ fn test_mint_over_supply() {
 #[feature("safe_dispatcher")]
 fn test_minting_no_allownace_or_funds() {
     let (ethrx, erc20) = setup();
-    let ethrx = IEthrxABISafeDispatcher { contract_address: ethrx.contract_address };
+    let ethrx = IEthrxSafeDispatcher { contract_address: ethrx.contract_address };
 
     // No allowance
     start_cheat_caller_address(ethrx.contract_address, BYSTANDER);
