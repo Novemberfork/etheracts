@@ -1,0 +1,11 @@
+*.DS_Store
+
+.env
+
+target
+.snfoundry_cache/
+snfoundry_trace/
+coverage/
+profile/
+
+integration/exports/local.md
