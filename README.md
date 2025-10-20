@@ -1,3 +1,3 @@
 # Etheracts
 
-On-chain "billboard" protocol. Each token is a billboard that can store arbitrary registries and content.
+On-chain registry protocol. Each token can store arbitrary registries that reset on standard transfers. 
