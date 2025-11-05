@@ -8,6 +8,7 @@ pub struct ConstructorArgs {
     pub name: ByteArray,
     pub symbol: ByteArray,
     pub base_uri: ByteArray,
+    pub contract_uri: ByteArray,
     pub mint_token: ContractAddress,
     pub mint_price: u256,
     pub max_supply: u256,
@@ -40,6 +41,9 @@ pub trait IEthrx<TState> {
 
     fn official_tags(self: @TState) -> Array<felt252>;
 
+    fn contract_uri(self: @TState) -> ByteArray;
+    fn contractURI(self: @TState) -> ByteArray;
+
     /// WRITE ///
     fn mint(ref self: TState, amounts: Array<u256>, tos: Array<ContractAddress>);
 
@@ -53,6 +57,7 @@ pub trait IEthrx<TState> {
     );
 
     fn set_base_uri(ref self: TState, new_base_uri: ByteArray);
+    fn set_contract_uri(ref self: TState, new_contract_uri: ByteArray);
     fn set_mint_price(ref self: TState, new_mint_price: u256);
     fn set_mint_token(ref self: TState, new_mint_token: ContractAddress);
     fn set_tags(

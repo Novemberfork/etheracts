@@ -45,6 +45,7 @@ pub mod Ethrx {
         tag_nonces: Map<(felt252, felt252), usize>,
         artifacts: Map<(felt252, felt252, usize), Bytes>,
         artifact_saving: Map<u256, bool>,
+        contract_uri: ByteArray,
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
         #[substorage(v0)]
@@ -56,11 +57,13 @@ pub mod Ethrx {
     #[constructor]
     fn constructor(ref self: ContractState, args: ConstructorArgs) {
         let ConstructorArgs {
-            owner, name, symbol, base_uri, mint_token, mint_price, max_supply,
+            owner, name, symbol, base_uri, contract_uri, mint_token, mint_price, max_supply,
         } = args;
 
         self.ownable.initializer(owner);
         self.erc721.initializer(name, symbol, base_uri);
+
+        self.contract_uri.write(contract_uri);
 
         self.mint_token.write(mint_token);
         self.mint_price.write(mint_price);
@@ -196,6 +199,14 @@ pub mod Ethrx {
             artifacts
         }
 
+        fn contract_uri(self: @ContractState) -> ByteArray {
+            self.contract_uri.read()
+        }
+
+        fn contractURI(self: @ContractState) -> ByteArray {
+            self.contract_uri.read()
+        }
+
 
         /// WRITE ///
 
@@ -242,6 +253,11 @@ pub mod Ethrx {
         fn set_base_uri(ref self: ContractState, new_base_uri: ByteArray) {
             self._only_owner();
             self.erc721._set_base_uri(new_base_uri);
+        }
+
+        fn set_contract_uri(ref self: ContractState, new_contract_uri: ByteArray) {
+            self._only_owner();
+            self.contract_uri.write(new_contract_uri);
         }
 
         fn set_mint_price(ref self: ContractState, new_mint_price: u256) {
