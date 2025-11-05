@@ -28,7 +28,7 @@ pub mod INITIAL_ENGRAVINGS {
         "DegenDeveloper"
     }
     fn GITHUB_HANDLE() -> ByteArray {
-        "0xDegenDeveloper"
+        "NovemberFork"
     }
 
     pub fn INITIAL_ARTIFACT(token_id: u256) -> Artifact {
@@ -38,37 +38,37 @@ pub mod INITIAL_ENGRAVINGS {
         let mut message: ByteArray = "";
 
         if token_id == 1 {
-            title = format!("#{token_id} The Southpaw");
+            title = format!("The Southpaw");
             message = "";
         } else if token_id == 2 {
-            title = format!("#{token_id} Hello, Milkyway");
+            title = format!("Hello, Milkyway");
             message = "";
         } else if token_id == 3 {
-            title = format!("#{token_id} Exoplants");
+            title = format!("Exoplants");
             message = "";
         } else if token_id == 4 {
-            title = format!("#{token_id} Type III Civilizations");
+            title = format!("Type III Civilizations");
             message = "";
         } else if token_id == 5 {
-            title = format!("#{token_id} Primates On A Rock Paying Taxes");
+            title = format!("Primates On A Rock Paying Taxes");
             message = "";
         } else if token_id == 6 {
-            title = format!("#{token_id} Stuck In A Matrix");
+            title = format!("Stuck In A Matrix");
             message = "";
         } else if token_id == 7 {
-            title = format!("#{token_id} Awareness");
+            title = format!("Awareness");
             message = "";
         } else if token_id == 8 {
-            title = format!("#{token_id} Remembering We'll Never Be Those Kids Again");
+            title = format!("Remembering We'll Never Be Those Kids Again");
             message = "";
         } else if token_id == 9 {
-            title = format!("#{token_id} Free The Nip");
+            title = format!("Free The Nip");
             message = "";
         } else if token_id == 10 {
-            title = format!("#{token_id} Binary");
+            title = format!("Binary");
             message = "";
         } else {
-            title = format!("#{token_id} Flowers for my gf who loves flowers <3");
+            title = format!("Flowers for my gf <3");
             message = "";
         }
 

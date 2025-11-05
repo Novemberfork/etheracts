@@ -29,7 +29,7 @@ pub fn BASE_URI() -> ByteArray {
     "http://novemberfork.io/etheracts/URI/"
 }
 pub fn CONTRACT_URI() -> ByteArray {
-    "https://novemberfork.io/etheracts/URI/contract.json"
+    "https://novemberfork.io/etheracts/URI/contract"
 }
 
 /// Utils ///
