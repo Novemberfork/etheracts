@@ -10,8 +10,3 @@ A sleek, modular Go-based deployment tool for NovemberFork Starknet contracts. T
 - 🌐 **Multi-Network Support**: Local, testnet, and mainnet deployment support
 - 📊 **Comprehensive Logging**: Detailed deployment logs and progress tracking
 - ⚡ **Fast & Reliable**: Built with Go for performance and reliability
-
-## License
-
-This project is part of the NovemberFork monorepo. See the main repository for license information.
-
