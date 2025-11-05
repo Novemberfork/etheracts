@@ -2,7 +2,7 @@ export const ABI = [
   {
     "type": "impl",
     "name": "EthrxImpl",
-    "interface_name": "novemberfork::ethrx::interface::IEthrx"
+    "interface_name": "etheracts::ethrx::interface::IEthrx"
   },
   {
     "type": "struct",
@@ -34,7 +34,7 @@ export const ABI = [
   },
   {
     "type": "struct",
-    "name": "novemberfork::types::engraving::Engraving",
+    "name": "etheracts::types::engraving::Engraving",
     "members": [
       {
         "name": "tag",
@@ -48,11 +48,11 @@ export const ABI = [
   },
   {
     "type": "struct",
-    "name": "novemberfork::types::engraving::Artifact",
+    "name": "etheracts::types::engraving::Artifact",
     "members": [
       {
         "name": "collection",
-        "type": "core::array::Array::<novemberfork::types::engraving::Engraving>"
+        "type": "core::array::Array::<etheracts::types::engraving::Engraving>"
       }
     ]
   },
@@ -104,7 +104,7 @@ export const ABI = [
   },
   {
     "type": "interface",
-    "name": "novemberfork::ethrx::interface::IEthrx",
+    "name": "etheracts::ethrx::interface::IEthrx",
     "items": [
       {
         "type": "function",
@@ -188,7 +188,7 @@ export const ABI = [
         ],
         "outputs": [
           {
-            "type": "core::array::Array::<novemberfork::types::engraving::Artifact>"
+            "type": "core::array::Array::<etheracts::types::engraving::Artifact>"
           }
         ],
         "state_mutability": "view"
@@ -232,7 +232,7 @@ export const ABI = [
         ],
         "outputs": [
           {
-            "type": "core::array::Array::<novemberfork::types::engraving::Artifact>"
+            "type": "core::array::Array::<etheracts::types::engraving::Artifact>"
           }
         ],
         "state_mutability": "view"
@@ -244,6 +244,28 @@ export const ABI = [
         "outputs": [
           {
             "type": "core::array::Array::<core::felt252>"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "contract_uri",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::byte_array::ByteArray"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "contractURI",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::byte_array::ByteArray"
           }
         ],
         "state_mutability": "view"
@@ -274,7 +296,7 @@ export const ABI = [
           },
           {
             "name": "artifacts",
-            "type": "core::array::Array::<novemberfork::types::engraving::Artifact>"
+            "type": "core::array::Array::<etheracts::types::engraving::Artifact>"
           }
         ],
         "outputs": [],
@@ -306,6 +328,18 @@ export const ABI = [
         "inputs": [
           {
             "name": "new_base_uri",
+            "type": "core::byte_array::ByteArray"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "set_contract_uri",
+        "inputs": [
+          {
+            "name": "new_contract_uri",
             "type": "core::byte_array::ByteArray"
           }
         ],
@@ -652,7 +686,7 @@ export const ABI = [
   },
   {
     "type": "struct",
-    "name": "novemberfork::ethrx::interface::ConstructorArgs",
+    "name": "etheracts::ethrx::interface::ConstructorArgs",
     "members": [
       {
         "name": "owner",
@@ -668,6 +702,10 @@ export const ABI = [
       },
       {
         "name": "base_uri",
+        "type": "core::byte_array::ByteArray"
+      },
+      {
+        "name": "contract_uri",
         "type": "core::byte_array::ByteArray"
       },
       {
@@ -690,13 +728,13 @@ export const ABI = [
     "inputs": [
       {
         "name": "args",
-        "type": "novemberfork::ethrx::interface::ConstructorArgs"
+        "type": "etheracts::ethrx::interface::ConstructorArgs"
       }
     ]
   },
   {
     "type": "event",
-    "name": "novemberfork::ethrx::contract::Ethrx::ArtifactEngraved",
+    "name": "etheracts::ethrx::contract::Ethrx::ArtifactEngraved",
     "kind": "struct",
     "members": [
       {
@@ -706,19 +744,19 @@ export const ABI = [
       },
       {
         "name": "old_engraving",
-        "type": "novemberfork::types::engraving::Engraving",
+        "type": "etheracts::types::engraving::Engraving",
         "kind": "data"
       },
       {
         "name": "new_engraving",
-        "type": "novemberfork::types::engraving::Engraving",
+        "type": "etheracts::types::engraving::Engraving",
         "kind": "data"
       }
     ]
   },
   {
     "type": "event",
-    "name": "novemberfork::ethrx::contract::Ethrx::TagRegistered",
+    "name": "etheracts::ethrx::contract::Ethrx::TagRegistered",
     "kind": "struct",
     "members": [
       {
@@ -730,7 +768,7 @@ export const ABI = [
   },
   {
     "type": "event",
-    "name": "novemberfork::ethrx::contract::Ethrx::TagReregistered",
+    "name": "etheracts::ethrx::contract::Ethrx::TagReregistered",
     "kind": "struct",
     "members": [
       {
@@ -892,22 +930,22 @@ export const ABI = [
   },
   {
     "type": "event",
-    "name": "novemberfork::ethrx::contract::Ethrx::Event",
+    "name": "etheracts::ethrx::contract::Ethrx::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "ArtifactEngraved",
-        "type": "novemberfork::ethrx::contract::Ethrx::ArtifactEngraved",
+        "type": "etheracts::ethrx::contract::Ethrx::ArtifactEngraved",
         "kind": "nested"
       },
       {
         "name": "TagRegistered",
-        "type": "novemberfork::ethrx::contract::Ethrx::TagRegistered",
+        "type": "etheracts::ethrx::contract::Ethrx::TagRegistered",
         "kind": "nested"
       },
       {
         "name": "TagReregistered",
-        "type": "novemberfork::ethrx::contract::Ethrx::TagReregistered",
+        "type": "etheracts::ethrx::contract::Ethrx::TagReregistered",
         "kind": "nested"
       },
       {

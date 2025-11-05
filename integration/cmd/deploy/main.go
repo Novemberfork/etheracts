@@ -90,6 +90,7 @@ func printConfigSummary(cfg *config.Config, logger *logrus.Logger) {
 		logger.Debugf("   Name: %s", cfg.Contracts.Ethrx.Name)
 		logger.Debugf("   Symbol: %s", cfg.Contracts.Ethrx.Symbol)
 		logger.Debugf("   Base URI: %s", cfg.Contracts.Ethrx.BaseURI)
+		logger.Debugf("   Contract URI: %s", cfg.Contracts.Ethrx.ContractURI)
 		logger.Debugf("   Mint Token: %s", cfg.Contracts.Ethrx.MintToken)
 		logger.Debugf("   Mint Price: %s", cfg.Contracts.Ethrx.MintPrice)
 		logger.Debugf("   Max Supply: %s", cfg.Contracts.Ethrx.MaxSupply)

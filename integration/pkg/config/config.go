@@ -41,13 +41,14 @@ type ContractsConfig struct {
 
 // EthrxConfig holds Ethrx contract configuration
 type EthrxConfig struct {
-	Owner     string `json:"owner"`
-	Name      string `json:"name"`
-	Symbol    string `json:"symbol"`
-	BaseURI   string `json:"base_uri"`
-	MintToken string `json:"mint_token"`
-	MintPrice string `json:"mint_price"`
-	MaxSupply string `json:"max_supply"`
+	Owner       string `json:"owner"`
+	Name        string `json:"name"`
+	Symbol      string `json:"symbol"`
+	BaseURI     string `json:"base_uri"`
+	ContractURI string `json:"contract_uri"`
+	MintToken   string `json:"mint_token"`
+	MintPrice   string `json:"mint_price"`
+	MaxSupply   string `json:"max_supply"`
 
 	// Contract file paths
 	SierraPath string `json:"sierra_path"`
@@ -250,20 +251,22 @@ func loadEthrxConfig() (*EthrxConfig, error) {
 	name := getEnvOrDefault("ETHRX_NAME", "Etheracts")
 	symbol := getEnvOrDefault("ETHRX_SYMBOL", "Ethrx")
 	baseURI := getEnvOrDefault("ETHRX_BASE_URI", "http://novemberfork.io/etheracts/URI/")
+	contractURI := getEnvOrDefault("ETHRX_CONTRACT_URI", "https://novemberfork.io/etheracts/URI/contract")
 
-	sierraPath := getEnvOrDefault("ETHRX_SIERRA_PATH", "contracts/ethrx/target/dev/ethrx_contracts_Ethrx.contract_class.json")
-	casmPath := getEnvOrDefault("ETHRX_CASM_PATH", "contracts/ethrx/target/dev/ethrx_contracts_Ethrx.compiled_contract_class.json")
+	sierraPath := getEnvOrDefault("ETHRX_SIERRA_PATH", "../target/dev/etheracts_Ethrx.contract_class.json")
+	casmPath := getEnvOrDefault("ETHRX_CASM_PATH", "../target/dev/etheracts_Ethrx.compiled_contract_class.json")
 
 	return &EthrxConfig{
-		Owner:      owner,
-		Name:       name,
-		Symbol:     symbol,
-		BaseURI:    baseURI,
-		MintToken:  mintToken,
-		MintPrice:  mintPrice,
-		MaxSupply:  maxSupply,
-		SierraPath: sierraPath,
-		CasmPath:   casmPath,
+		Owner:       owner,
+		Name:        name,
+		Symbol:      symbol,
+		BaseURI:     baseURI,
+		ContractURI: contractURI,
+		MintToken:   mintToken,
+		MintPrice:   mintPrice,
+		MaxSupply:   maxSupply,
+		SierraPath:  sierraPath,
+		CasmPath:    casmPath,
 	}, nil
 }
 

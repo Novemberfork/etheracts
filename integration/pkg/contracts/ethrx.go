@@ -124,6 +124,13 @@ func (e *EthrxDeployer) buildConstructorArgs() ([]*felt.Felt, error) {
 	}
 	calldata = append(calldata, baseURIFelts...)
 
+	// Convert contract URI to ByteArray (Cairo ByteArray structure)
+	contractURIFelts, err := stringToByteArray(e.config.ContractURI)
+	if err != nil {
+		return nil, fmt.Errorf("invalid contract URI: %w", err)
+	}
+	calldata = append(calldata, contractURIFelts...)
+
 	// Convert mint token address
 	mintToken, err := utils.HexToFelt(e.config.MintToken)
 	if err != nil {
@@ -152,6 +159,7 @@ func (e *EthrxDeployer) buildConstructorArgs() ([]*felt.Felt, error) {
 	e.logger.Debugf("   Name: %s", e.config.Name)
 	e.logger.Debugf("   Symbol: %s", e.config.Symbol)
 	e.logger.Debugf("   Base URI: %s", e.config.BaseURI)
+	e.logger.Debugf("   Contract URI: %s", e.config.ContractURI)
 	e.logger.Debugf("   Mint Token: %s", e.config.MintToken)
 	e.logger.Debugf("   Mint Price: %s", e.config.MintPrice)
 	e.logger.Debugf("   Max Supply: %s", e.config.MaxSupply)
@@ -183,6 +191,11 @@ func splitU256(value *big.Int) (*felt.Felt, *felt.Felt) {
 
 // stringToByteArray converts a string to Cairo ByteArray structure
 // Returns: [data_len, data_words..., pending_word, pending_word_len]
+// Cairo ByteArray structure:
+//   - data: Array<bytes31> (each bytes31 is 31 bytes, stored as felt252)
+//   - pending_word: felt252 (last incomplete word, 0-31 bytes)
+//   - pending_word_len: u32 (number of bytes in pending_word)
+// When serialized for calldata, Array is: [length, element0, element1, ...]
 func stringToByteArray(s string) ([]*felt.Felt, error) {
 	if s == "" {
 		// Empty ByteArray: data_len=0, pending_word=0, pending_word_len=0
@@ -195,36 +208,48 @@ func stringToByteArray(s string) ([]*felt.Felt, error) {
 
 	bytes := []byte(s)
 	length := len(bytes)
+	const wordSize = 31 // bytes31 is 31 bytes
 
-	// If string fits in pending_word (≤31 bytes), use simple structure
-	if length <= 31 {
-		// Convert string to hex and then to felt
-		hexStr := fmt.Sprintf("0x%x", bytes)
-		pendingWord, err := utils.HexToFelt(hexStr)
+	// Calculate number of full words and remaining bytes
+	fullWords := length / wordSize
+	remainingBytes := length % wordSize
+
+	var result []*felt.Felt
+
+	// Add data_len (number of full 31-byte words)
+	result = append(result, new(felt.Felt).SetUint64(uint64(fullWords)))
+
+	// Add full words (31 bytes each)
+	for i := 0; i < fullWords; i++ {
+		start := i * wordSize
+		end := start + wordSize
+		wordBytes := bytes[start:end]
+		hexStr := fmt.Sprintf("0x%x", wordBytes)
+		word, err := utils.HexToFelt(hexStr)
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert string to felt: %w", err)
+			return nil, fmt.Errorf("failed to convert word to felt: %w", err)
 		}
-
-		return []*felt.Felt{
-			new(felt.Felt).SetUint64(0),              // data_len (no full words)
-			pendingWord,                              // pending_word (the actual string data)
-			new(felt.Felt).SetUint64(uint64(length)), // pending_word_len
-		}, nil
+		result = append(result, word)
 	}
 
-	// For longer strings, we'd need to split into multiple 31-byte words
-	// For now, truncate to 31 bytes and warn
-	// TODO: Implement proper multi-word ByteArray conversion
-	truncated := bytes[:31]
-	hexStr := fmt.Sprintf("0x%x", truncated)
-	pendingWord, err := utils.HexToFelt(hexStr)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert truncated string to felt: %w", err)
+	// Add pending_word (last incomplete word, if any)
+	var pendingWord *felt.Felt
+	if remainingBytes > 0 {
+		start := fullWords * wordSize
+		pendingBytes := bytes[start:]
+		hexStr := fmt.Sprintf("0x%x", pendingBytes)
+		var err error
+		pendingWord, err = utils.HexToFelt(hexStr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert pending word to felt: %w", err)
+		}
+	} else {
+		pendingWord = new(felt.Felt).SetUint64(0)
 	}
+	result = append(result, pendingWord)
 
-	return []*felt.Felt{
-		new(felt.Felt).SetUint64(0),  // data_len (no full words)
-		pendingWord,                  // pending_word (truncated string data)
-		new(felt.Felt).SetUint64(31), // pending_word_len (truncated to 31)
-	}, nil
+	// Add pending_word_len
+	result = append(result, new(felt.Felt).SetUint64(uint64(remainingBytes)))
+
+	return result, nil
 }
