@@ -26,7 +26,7 @@ pub fn SYMBOL() -> ByteArray {
     "Ethrx"
 }
 pub fn BASE_URI() -> ByteArray {
-    "http://novemberfork.io/digital/ethrx/"
+    "http://novemberfork.io/etheracts/URI/"
 }
 
 /// Utils ///

@@ -48,7 +48,7 @@ type EthrxConfig struct {
 	MintToken string `json:"mint_token"`
 	MintPrice string `json:"mint_price"`
 	MaxSupply string `json:"max_supply"`
-	
+
 	// Contract file paths
 	SierraPath string `json:"sierra_path"`
 	CasmPath   string `json:"casm_path"`
@@ -71,11 +71,11 @@ type LoggingConfig struct {
 func LoadConfig() (*Config, error) {
 	// Try to load .env file from multiple locations
 	envFiles := []string{
-		".env",           // Current directory
-		"../.env",        // Parent directory (when running from integration/)
-		"../../.env",     // Two levels up (fallback)
+		".env",       // Current directory
+		"../.env",    // Parent directory (when running from integration/)
+		"../../.env", // Two levels up (fallback)
 	}
-	
+
 	var loaded bool
 	for _, envFile := range envFiles {
 		if err := godotenv.Load(envFile); err == nil {
@@ -84,7 +84,7 @@ func LoadConfig() (*Config, error) {
 			break
 		}
 	}
-	
+
 	if !loaded {
 		logrus.Warn("No .env file found, using environment variables")
 	}
@@ -185,7 +185,7 @@ func loadDeployerConfig() (*DeployerConfig, error) {
 	}
 
 	if address == "" || privateKey == "" || publicKey == "" {
-		return nil, fmt.Errorf("missing required deployer environment variables for %s: %s_DEPLOYER_ADDRESS, %s_DEPLOYER_PRIVATE_KEY, %s_DEPLOYER_PUBLIC_KEY", 
+		return nil, fmt.Errorf("missing required deployer environment variables for %s: %s_DEPLOYER_ADDRESS, %s_DEPLOYER_PRIVATE_KEY, %s_DEPLOYER_PUBLIC_KEY",
 			strings.ToUpper(network), strings.ToUpper(network), strings.ToUpper(network), strings.ToUpper(network))
 	}
 
@@ -249,7 +249,7 @@ func loadEthrxConfig() (*EthrxConfig, error) {
 
 	name := getEnvOrDefault("ETHRX_NAME", "Etheracts")
 	symbol := getEnvOrDefault("ETHRX_SYMBOL", "Ethrx")
-	baseURI := getEnvOrDefault("ETHRX_BASE_URI", "http://novemberfork.io/digital/ethrx/")
+	baseURI := getEnvOrDefault("ETHRX_BASE_URI", "http://novemberfork.io/etheracts/URI/")
 
 	sierraPath := getEnvOrDefault("ETHRX_SIERRA_PATH", "contracts/ethrx/target/dev/ethrx_contracts_Ethrx.contract_class.json")
 	casmPath := getEnvOrDefault("ETHRX_CASM_PATH", "contracts/ethrx/target/dev/ethrx_contracts_Ethrx.compiled_contract_class.json")
