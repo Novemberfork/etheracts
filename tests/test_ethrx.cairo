@@ -10,7 +10,8 @@ use snforge_std::{
     EventSpyAssertionsTrait, spy_events, start_cheat_caller_address, stop_cheat_caller_address,
 };
 use crate::setup::{
-    ALICE, BASE_URI, BOB, BYSTANDER, MAX_SUPPLY, MINT_PRICE, NAME, OWNER, SYMBOL, setup,
+    ALICE, BASE_URI, BOB, BYSTANDER, CONTRACT_URI, MAX_SUPPLY, MINT_PRICE, NAME, OWNER, SYMBOL,
+    setup,
 };
 use crate::utils::EthrxFacadeImpl;
 
@@ -23,6 +24,7 @@ fn test_ethrx_constructor_args() {
     assert!(ethrx.name() == NAME(), "name mismatch");
     assert!(ethrx.symbol() == SYMBOL(), "symbol mismatch");
     assert!(ethrx.token_uri(1) == format!("{}{}", BASE_URI(), 1), "base uri mismatch");
+    assert!(ethrx.contract_uri() == CONTRACT_URI(), "contract uri mismatch");
     assert!(ethrx.mint_token() == erc20.contract_address, "mint token mismatch");
     assert!(ethrx.mint_price() == MINT_PRICE, "mint price mismatch");
     assert!(ethrx.max_supply() == MAX_SUPPLY, "max supply mismatch");
@@ -416,5 +418,37 @@ impl BAToBytesImpl of ToBytes<ByteArray> {
     fn to_bytes(self: ByteArray) -> Bytes {
         Into::<ByteArray, Bytes>::into(self)
     }
+}
+
+#[test]
+fn test_set_contract_uri_owner() {
+    let (ethrx, _) = setup();
+
+    let new_contract_uri = "https://example.com/new-contract.json";
+    let initial_contract_uri = ethrx.contract_uri();
+
+    // Owner should be able to set contract URI
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.set_contract_uri(new_contract_uri);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    assert!(ethrx.contract_uri() == new_contract_uri, "contract URI should be updated");
+    assert!(
+        ethrx.contract_uri() != initial_contract_uri,
+        "contract URI should be different from initial value",
+    );
+}
+
+#[test]
+#[should_panic(expected: ('Ownable: caller is not the owner',))]
+fn test_set_contract_uri_non_owner() {
+    let (ethrx, _) = setup();
+
+    let new_contract_uri = "https://example.com/new-contract.json";
+
+    // Non-owner should not be able to set contract URI - should panic
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.set_contract_uri(new_contract_uri);
+    stop_cheat_caller_address(ethrx.contract_address);
 }
 

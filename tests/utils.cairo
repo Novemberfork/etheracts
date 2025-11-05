@@ -107,6 +107,10 @@ pub impl EthrxFacadeImpl of EthrxTrait {
         (*self.dispatcher).official_tags()
     }
 
+    fn contract_uri(self: @EthrxFacade) -> ByteArray {
+        (*self.dispatcher).contract_uri()
+    }
+
     fn build_engraving(self: @EthrxFacade, tag: felt252, value: ByteArray) -> Engraving {
         Engraving { tag, data: value.into() }
     }
@@ -282,6 +286,10 @@ pub impl EthrxFacadeImpl of EthrxTrait {
 
     fn set_base_uri(self: @EthrxFacade, new_base_uri: ByteArray) {
         self.dispatcher.set_base_uri(new_base_uri);
+    }
+
+    fn set_contract_uri(self: @EthrxFacade, new_contract_uri: ByteArray) {
+        self.dispatcher.set_contract_uri(new_contract_uri);
     }
 
     fn set_mint_price(self: @EthrxFacade, new_mint_price: u256) {

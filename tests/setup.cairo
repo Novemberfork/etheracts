@@ -28,6 +28,9 @@ pub fn SYMBOL() -> ByteArray {
 pub fn BASE_URI() -> ByteArray {
     "http://novemberfork.io/etheracts/URI/"
 }
+pub fn CONTRACT_URI() -> ByteArray {
+    "https://novemberfork.io/etheracts/URI/contract.json"
+}
 
 /// Utils ///
 
@@ -66,6 +69,7 @@ pub fn deploy_ethrx(mint_token: ContractAddress) -> ContractAddress {
         name: NAME(),
         symbol: SYMBOL(),
         base_uri: BASE_URI(),
+        contract_uri: CONTRACT_URI(),
         mint_token,
         mint_price: MINT_PRICE,
         max_supply: MAX_SUPPLY,
