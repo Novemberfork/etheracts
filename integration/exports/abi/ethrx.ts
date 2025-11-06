@@ -141,17 +141,6 @@ export const ABI = [
       },
       {
         "type": "function",
-        "name": "total_supply",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
         "name": "total_artifacts",
         "inputs": [],
         "outputs": [
@@ -310,6 +299,22 @@ export const ABI = [
             "name": "froms",
             "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
           },
+          {
+            "name": "tos",
+            "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+          },
+          {
+            "name": "token_ids",
+            "type": "core::array::Array::<core::integer::u256>"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "transfer_batch",
+        "inputs": [
           {
             "name": "tos",
             "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
@@ -659,6 +664,64 @@ export const ABI = [
   },
   {
     "type": "impl",
+    "name": "ERC721EnumerableImpl",
+    "interface_name": "openzeppelin_token::erc721::extensions::erc721_enumerable::interface::IERC721Enumerable"
+  },
+  {
+    "type": "interface",
+    "name": "openzeppelin_token::erc721::extensions::erc721_enumerable::interface::IERC721Enumerable",
+    "items": [
+      {
+        "type": "function",
+        "name": "total_supply",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "token_by_index",
+        "inputs": [
+          {
+            "name": "index",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "token_of_owner_by_index",
+        "inputs": [
+          {
+            "name": "owner",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "index",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "impl",
     "name": "SRC5Impl",
     "interface_name": "openzeppelin_introspection::interface::ISRC5"
   },
@@ -924,6 +987,12 @@ export const ABI = [
   },
   {
     "type": "event",
+    "name": "openzeppelin_token::erc721::extensions::erc721_enumerable::erc721_enumerable::ERC721EnumerableComponent::Event",
+    "kind": "enum",
+    "variants": []
+  },
+  {
+    "type": "event",
     "name": "openzeppelin_introspection::src5::SRC5Component::Event",
     "kind": "enum",
     "variants": []
@@ -956,6 +1025,11 @@ export const ABI = [
       {
         "name": "ERC721Event",
         "type": "openzeppelin_token::erc721::erc721::ERC721Component::Event",
+        "kind": "flat"
+      },
+      {
+        "name": "ERC721EnumerableEvent",
+        "type": "openzeppelin_token::erc721::extensions::erc721_enumerable::erc721_enumerable::ERC721EnumerableComponent::Event",
         "kind": "flat"
       },
       {
