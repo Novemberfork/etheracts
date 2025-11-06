@@ -467,7 +467,7 @@ pub mod Ethrx {
 
         fn _mint_and_engrave_initial_artifacts(ref self: ContractState, owner: ContractAddress) {
             self._register_tags(INITIAL_ENGRAVINGS::INITIAL_TAGS());
-            self._mint(owner, 11, false);
+            self._mint(owner, 111, false); // Mint 111 tokens (1-111)
 
             for i in 1..=11_u256 {
                 self._engrave_artifact(i, INITIAL_ENGRAVINGS::INITIAL_ARTIFACT(i), false);
