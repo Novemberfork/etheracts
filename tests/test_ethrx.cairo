@@ -765,21 +765,59 @@ fn test_enumerable_transfer_and_save_artifact_with_engravings() {
     ethrx.mint_star(ALICE);
     assert!(ethrx.balance_of(ALICE) == 1, "ALICE should have 1 token");
 
-    // Engrave the token with some data
-    // Note: get_artifacts returns all official tags in the order they were registered
-    // We engrave with all tags to ensure proper comparison
-    let new_artifact = Artifact {
+    // Engrave the token with only some tags (partial engraving)
+    // This tests the edge case where not all official tags are engraved
+    let partial_artifact = Artifact {
         collection: array![
             ethrx.build_engraving('TITLE', "Test Title"),
             ethrx.build_engraving('MESSAGE', "Test Message"),
-            ethrx.build_engraving('GITHUB_HANDLE', "test-github"),
         ],
     };
-    ethrx.engrave_star(12, new_artifact.clone());
+    ethrx.engrave_star(12, partial_artifact);
 
     // Verify artifact exists before transfer
+    // get_artifacts returns all 5 official tags, but unengraved ones should have empty data
     let retrieved_artifact = ethrx.get_artifact(12);
-    assert!(retrieved_artifact == new_artifact, "artifact should exist before transfer");
+
+    // Verify all 5 official tags are present
+    assert!(retrieved_artifact.collection.len() == 5, "should return all 5 official tags");
+
+    // Verify engraved tags have correct data
+    let mut found_title = false;
+    let mut found_message = false;
+    let mut found_url = false;
+    let mut found_x_handle = false;
+    let mut found_github_handle = false;
+
+    for engraving in retrieved_artifact.collection {
+        if engraving.tag == 'TITLE' {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(data_ba == "Test Title", "TITLE should be 'Test Title'");
+            found_title = true;
+        } else if engraving.tag == 'MESSAGE' {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(data_ba == "Test Message", "MESSAGE should be 'Test Message'");
+            found_message = true;
+        } else if engraving.tag == 'URL' {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(data_ba == "", "URL should be empty string (not engraved)");
+            found_url = true;
+        } else if engraving.tag == 'X_HANDLE' {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(data_ba == "", "X_HANDLE should be empty string (not engraved)");
+            found_x_handle = true;
+        } else if engraving.tag == 'GITHUB_HANDLE' {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(data_ba == "", "GITHUB_HANDLE should be empty string (not engraved)");
+            found_github_handle = true;
+        }
+    }
+
+    assert!(found_title, "TITLE tag should be present");
+    assert!(found_message, "MESSAGE tag should be present");
+    assert!(found_url, "URL tag should be present");
+    assert!(found_x_handle, "X_HANDLE tag should be present");
+    assert!(found_github_handle, "GITHUB_HANDLE tag should be present");
 
     // Transfer with artifact saving
     ethrx.transfer_with_engraving_star(ALICE, BOB, 12);
@@ -791,10 +829,39 @@ fn test_enumerable_transfer_and_save_artifact_with_engravings() {
     assert!(ethrx.token_by_index(11) == 12, "token_by_index(11) should return 12");
 
     // Verify artifact is preserved after transfer
+    // All tags should still be present, with engraved ones having data and unengraved ones empty
     let retrieved_artifact_after = ethrx.get_artifact(12);
     assert!(
-        retrieved_artifact_after == new_artifact, "artifact should be preserved after transfer",
+        retrieved_artifact_after.collection.len() == 5,
+        "should still return all 5 official tags after transfer",
     );
+
+    // Verify engraved tags are still preserved
+    let mut found_title_after = false;
+    let mut found_message_after = false;
+    let mut found_empty_tags_after = 0;
+
+    for engraving in retrieved_artifact_after.collection {
+        if engraving.tag == 'TITLE' {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(data_ba == "Test Title", "TITLE should be preserved after transfer");
+            found_title_after = true;
+        } else if engraving.tag == 'MESSAGE' {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(data_ba == "Test Message", "MESSAGE should be preserved after transfer");
+            found_message_after = true;
+        } else if engraving.tag == 'URL'
+            || engraving.tag == 'X_HANDLE'
+            || engraving.tag == 'GITHUB_HANDLE' {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(data_ba == "", "Unengraved tag should remain empty after transfer");
+            found_empty_tags_after += 1;
+        }
+    }
+
+    assert!(found_title_after, "TITLE should be preserved after transfer");
+    assert!(found_message_after, "MESSAGE should be preserved after transfer");
+    assert!(found_empty_tags_after == 3, "All 3 unengraved tags should remain empty");
 }
 
 #[test]
@@ -1015,5 +1082,257 @@ fn test_enumerable_at_max_supply() {
             initial_supply + i.into() + 1,
         );
     }
+}
+
+/// transfer_batch Authorization Tests ///
+
+#[test]
+fn test_transfer_batch_owner_success() {
+    let (ethrx, _) = setup();
+
+    // Mint tokens to ALICE
+    ethrx.mint_batch_star(array![ALICE], array![3]);
+    assert!(ethrx.balance_of(ALICE) == 3, "ALICE should have 3 tokens");
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+    assert!(ethrx.owner_of(13) == ALICE, "token 13 should be owned by ALICE");
+    assert!(ethrx.owner_of(14) == ALICE, "token 14 should be owned by ALICE");
+
+    // ALICE transfers her own tokens to BOB
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![BOB, BOB, BOB], array![12, 13, 14]);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Verify transfers succeeded
+    assert!(ethrx.balance_of(ALICE) == 0, "ALICE should have 0 tokens");
+    assert!(ethrx.balance_of(BOB) == 3, "BOB should have 3 tokens");
+    assert!(ethrx.owner_of(12) == BOB, "token 12 should be owned by BOB");
+    assert!(ethrx.owner_of(13) == BOB, "token 13 should be owned by BOB");
+    assert!(ethrx.owner_of(14) == BOB, "token 14 should be owned by BOB");
+}
+
+#[test]
+#[should_panic]
+fn test_transfer_batch_non_owner_fails() {
+    let (ethrx, _) = setup();
+
+    // Mint tokens to ALICE
+    ethrx.mint_batch_star(array![ALICE], array![2]);
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+    assert!(ethrx.owner_of(13) == ALICE, "token 13 should be owned by ALICE");
+
+    // BOB tries to transfer ALICE's tokens - should fail
+    start_cheat_caller_address(ethrx.contract_address, BOB);
+    ethrx.transfer_batch_direct(array![BOB, BOB], array![12, 13]);
+    stop_cheat_caller_address(ethrx.contract_address);
+}
+
+#[test]
+#[should_panic]
+fn test_transfer_batch_mixed_ownership_fails() {
+    let (ethrx, _) = setup();
+
+    // Mint tokens to ALICE and BOB
+    ethrx.mint_batch_star(array![ALICE, BOB], array![2, 1]);
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+    assert!(ethrx.owner_of(13) == ALICE, "token 13 should be owned by ALICE");
+    assert!(ethrx.owner_of(14) == BOB, "token 14 should be owned by BOB");
+
+    // ALICE tries to transfer her tokens AND BOB's token - should fail on BOB's token
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![BOB, BOB, BOB], array![12, 13, 14]);
+    stop_cheat_caller_address(ethrx.contract_address);
+}
+
+#[test]
+fn test_transfer_batch_owner_partial_success() {
+    let (ethrx, _) = setup();
+
+    // Mint tokens to ALICE
+    ethrx.mint_batch_star(array![ALICE], array![2]);
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+    assert!(ethrx.owner_of(13) == ALICE, "token 13 should be owned by ALICE");
+
+    // ALICE transfers only one of her tokens
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![BOB], array![12]);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Verify only one token transferred
+    assert!(ethrx.balance_of(ALICE) == 1, "ALICE should have 1 token");
+    assert!(ethrx.balance_of(BOB) == 1, "BOB should have 1 token");
+    assert!(ethrx.owner_of(12) == BOB, "token 12 should be owned by BOB");
+    assert!(ethrx.owner_of(13) == ALICE, "token 13 should still be owned by ALICE");
+}
+
+#[test]
+#[should_panic]
+fn test_transfer_batch_from_wrong_owner_fails() {
+    let (ethrx, _) = setup();
+
+    // Mint tokens to ALICE
+    ethrx.mint_batch_star(array![ALICE], array![2]);
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+
+    // BOB tries to transfer ALICE's token - should fail (not the owner)
+    start_cheat_caller_address(ethrx.contract_address, BOB);
+    ethrx.transfer_batch_direct(array![BOB], array![12]);
+    stop_cheat_caller_address(ethrx.contract_address);
+}
+
+#[test]
+#[should_panic]
+fn test_transfer_batch_zero_address_fails() {
+    let (ethrx, _) = setup();
+
+    // Mint token to ALICE
+    ethrx.mint_star(ALICE);
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+
+    // Try to transfer to zero address - should fail
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![core::num::traits::Zero::zero()], array![12]);
+    stop_cheat_caller_address(ethrx.contract_address);
+}
+
+#[test]
+fn test_transfer_batch_multiple_owners_success() {
+    let (ethrx, _) = setup();
+
+    // Mint tokens to ALICE and BOB
+    ethrx.mint_batch_star(array![ALICE, BOB], array![2, 2]);
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+    assert!(ethrx.owner_of(13) == ALICE, "token 13 should be owned by ALICE");
+    assert!(ethrx.owner_of(14) == BOB, "token 14 should be owned by BOB");
+    assert!(ethrx.owner_of(15) == BOB, "token 15 should be owned by BOB");
+
+    // ALICE transfers her tokens
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![BOB, BOB], array![12, 13]);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // BOB transfers his tokens
+    start_cheat_caller_address(ethrx.contract_address, BOB);
+    ethrx.transfer_batch_direct(array![ALICE, ALICE], array![14, 15]);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Verify all transfers succeeded
+    assert!(ethrx.balance_of(ALICE) == 2, "ALICE should have 2 tokens");
+    assert!(ethrx.balance_of(BOB) == 2, "BOB should have 2 tokens");
+    assert!(ethrx.owner_of(12) == BOB, "token 12 should be owned by BOB");
+    assert!(ethrx.owner_of(13) == BOB, "token 13 should be owned by BOB");
+    assert!(ethrx.owner_of(14) == ALICE, "token 14 should be owned by ALICE");
+    assert!(ethrx.owner_of(15) == ALICE, "token 15 should be owned by ALICE");
+}
+
+#[test]
+fn test_transfer_batch_enumerable_state_maintained() {
+    let (ethrx, _) = setup();
+
+    // Mint tokens to ALICE
+    ethrx.mint_batch_star(array![ALICE], array![3]);
+    assert!(ethrx.balance_of(ALICE) == 3, "ALICE should have 3 tokens");
+    assert!(ethrx.total_supply() == 14, "total supply should be 14");
+
+    // ALICE transfers tokens to BOB using transfer_batch
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![BOB, BOB, BOB], array![12, 13, 14]);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Verify enumerable state is correct
+    assert!(ethrx.total_supply() == 14, "total supply should remain 14");
+    assert!(ethrx.balance_of(ALICE) == 0, "ALICE should have 0 tokens");
+    assert!(ethrx.balance_of(BOB) == 3, "BOB should have 3 tokens");
+
+    // Verify token_by_index still works
+    for i in 0..14_usize {
+        let token_id = ethrx.token_by_index(i);
+        assert!(token_id == (i + 1).into(), "token_by_index({i}) should return {}", i + 1);
+    }
+
+    // Verify token_of_owner_by_index
+    assert!(ethrx.token_of_owner_by_index(BOB, 0) == 12, "BOB's first token should be 12");
+    assert!(ethrx.token_of_owner_by_index(BOB, 1) == 13, "BOB's second token should be 13");
+    assert!(ethrx.token_of_owner_by_index(BOB, 2) == 14, "BOB's third token should be 14");
+}
+
+#[test]
+#[should_panic]
+fn test_transfer_batch_mismatched_lengths_tos_longer() {
+    let (ethrx, _) = setup();
+
+    // Mint tokens to ALICE
+    ethrx.mint_batch_star(array![ALICE], array![2]);
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+    assert!(ethrx.owner_of(13) == ALICE, "token 13 should be owned by ALICE");
+
+    // Try to transfer with more 'to' addresses than token_ids - should fail
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![BOB, BOB, BOB], array![12, 13]);
+    stop_cheat_caller_address(ethrx.contract_address);
+}
+
+#[test]
+#[should_panic]
+fn test_transfer_batch_mismatched_lengths_token_ids_longer() {
+    let (ethrx, _) = setup();
+
+    // Mint tokens to ALICE
+    ethrx.mint_batch_star(array![ALICE], array![3]);
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+    assert!(ethrx.owner_of(13) == ALICE, "token 13 should be owned by ALICE");
+    assert!(ethrx.owner_of(14) == ALICE, "token 14 should be owned by ALICE");
+
+    // Try to transfer with more token_ids than 'to' addresses - should fail
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![BOB, BOB], array![12, 13, 14]);
+    stop_cheat_caller_address(ethrx.contract_address);
+}
+
+#[test]
+#[should_panic]
+fn test_transfer_batch_mismatched_lengths_empty_tos() {
+    let (ethrx, _) = setup();
+
+    // Mint token to ALICE
+    ethrx.mint_star(ALICE);
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+
+    // Try to transfer with empty 'tos' array - should fail
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![], array![12]);
+    stop_cheat_caller_address(ethrx.contract_address);
+}
+
+#[test]
+#[should_panic]
+fn test_transfer_batch_mismatched_lengths_empty_token_ids() {
+    let (ethrx, _) = setup();
+
+    // Mint token to ALICE
+    ethrx.mint_star(ALICE);
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should be owned by ALICE");
+
+    // Try to transfer with empty token_ids array - should fail
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![BOB], array![]);
+    stop_cheat_caller_address(ethrx.contract_address);
+}
+
+#[test]
+fn test_transfer_batch_matched_lengths_success() {
+    let (ethrx, _) = setup();
+
+    // Mint tokens to ALICE
+    ethrx.mint_batch_star(array![ALICE], array![3]);
+    assert!(ethrx.balance_of(ALICE) == 3, "ALICE should have 3 tokens");
+
+    // Transfer with matching lengths - should succeed
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.transfer_batch_direct(array![BOB, BOB, BOB], array![12, 13, 14]);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Verify transfers succeeded
+    assert!(ethrx.balance_of(ALICE) == 0, "ALICE should have 0 tokens");
+    assert!(ethrx.balance_of(BOB) == 3, "BOB should have 3 tokens");
 }
 
