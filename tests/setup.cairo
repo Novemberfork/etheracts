@@ -18,7 +18,7 @@ pub const BOB: ContractAddress = 'bob'.try_into().unwrap();
 pub const BYSTANDER: ContractAddress = 'bystander'.try_into().unwrap();
 pub const OWNER: ContractAddress = 'owner'.try_into().unwrap();
 pub const MINT_PRICE: u256 = 100_000_000;
-pub const MAX_SUPPLY: u256 = 111; // Must be > 11
+pub const MAX_SUPPLY: u256 = 211; // Must be > 111 to allow minting in tests (111 minted in constructor)
 pub fn NAME() -> ByteArray {
     "Etheracts"
 }
