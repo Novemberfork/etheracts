@@ -772,7 +772,6 @@ fn test_enumerable_transfer_and_save_artifact_with_engravings() {
         collection: array![
             ethrx.build_engraving('TITLE', "Test Title"),
             ethrx.build_engraving('MESSAGE', "Test Message"),
-            ethrx.build_engraving('URL', "test-url"), ethrx.build_engraving('X_HANDLE', "test-x"),
             ethrx.build_engraving('GITHUB_HANDLE', "test-github"),
         ],
     };
