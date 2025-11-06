@@ -119,3 +119,13 @@
 
 ---
 
+## Deployment - 2025-11-06 15:30:41
+
+- **Contract**: Ethrx
+- **Class Hash**: `0x1888973d984d1f5a5380f45ce200f4582137d41524e2339c0dfe42edddcb6ad`
+- **Deployed Address**: `0x6d4039f7dcf92e1083fadc98eae82f21a45f1b887a958447ee1452167f6c883`
+- **Transaction Hash**: `0x32401c67b62f1c3171d88dcc449aa3596581d77fcf5b6f7df48aa82e77f2ee5`
+- **Timestamp**: 2025-11-06 15:30:41
+
+---
+
