@@ -216,6 +216,12 @@ pub impl EthrxFacadeImpl of EthrxTrait {
         }
     }
 
+    fn transfer_batch_direct(
+        self: @EthrxFacade, tos: Array<ContractAddress>, token_ids: Array<u256>,
+    ) {
+        self.dispatcher.transfer_batch(tos, token_ids);
+    }
+
     fn transfer_star(
         self: @EthrxFacade, from: ContractAddress, to: ContractAddress, token_id: u256,
     ) {

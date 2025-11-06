@@ -260,6 +260,19 @@ pub mod Ethrx {
             }
         }
 
+        fn transfer_batch(
+            ref self: ContractState, tos: Array<ContractAddress>, token_ids: Array<u256>,
+        ) {
+            assert!(tos.len() == token_ids.len(), "Mismatched lengths");
+            for i in 0..token_ids.len() {
+                let to = *tos[i];
+                let from = get_caller_address();
+                let token_id = *token_ids[i];
+
+                self.transfer_from(from, to, token_id);
+            }
+        }
+
         fn set_base_uri(ref self: ContractState, new_base_uri: ByteArray) {
             self._only_owner();
             self.erc721._set_base_uri(new_base_uri);

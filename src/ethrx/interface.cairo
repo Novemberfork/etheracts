@@ -55,6 +55,8 @@ pub trait IEthrx<TState> {
         token_ids: Array<u256>,
     );
 
+    fn transfer_batch(ref self: TState, tos: Array<ContractAddress>, token_ids: Array<u256>);
+
     fn set_base_uri(ref self: TState, new_base_uri: ByteArray);
     fn set_contract_uri(ref self: TState, new_contract_uri: ByteArray);
     fn set_mint_price(ref self: TState, new_mint_price: u256);
