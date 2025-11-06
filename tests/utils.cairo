@@ -2,6 +2,9 @@ use etheracts::ethrx::interface::{IEthrxDispatcher, IEthrxDispatcherTrait, IEthr
 use etheracts::types::engraving::{Artifact, Engraving};
 use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+use openzeppelin_token::erc721::extensions::erc721_enumerable::interface::{
+    IERC721EnumerableDispatcher, IERC721EnumerableDispatcherTrait,
+};
 use openzeppelin_token::erc721::interface::{
     IERC721Dispatcher, IERC721DispatcherTrait, IERC721MetadataDispatcher,
     IERC721MetadataDispatcherTrait,
@@ -18,6 +21,7 @@ pub struct EthrxFacade {
     pub ownable: IOwnableDispatcher,
     pub erc721_metadata: IERC721MetadataDispatcher,
     pub erc721: IERC721Dispatcher,
+    pub erc721_enumerable: IERC721EnumerableDispatcher,
 }
 
 #[generate_trait]
@@ -28,8 +32,15 @@ pub impl EthrxFacadeImpl of EthrxTrait {
         let ownable = IOwnableDispatcher { contract_address };
         let erc721_metadata = IERC721MetadataDispatcher { contract_address };
         let erc721 = IERC721Dispatcher { contract_address };
+        let erc721_enumerable = IERC721EnumerableDispatcher { contract_address };
         EthrxFacade {
-            contract_address, dispatcher, safe_dispatcher, ownable, erc721_metadata, erc721,
+            contract_address,
+            dispatcher,
+            safe_dispatcher,
+            ownable,
+            erc721_metadata,
+            erc721,
+            erc721_enumerable,
         }
     }
 
@@ -62,7 +73,19 @@ pub impl EthrxFacadeImpl of EthrxTrait {
         (*self.dispatcher).max_supply()
     }
     fn total_supply(self: @EthrxFacade) -> u256 {
-        (*self.dispatcher).total_supply()
+        (*self.erc721_enumerable).total_supply()
+    }
+
+    fn token_by_index(self: @EthrxFacade, index: usize) -> u256 {
+        (*self.erc721_enumerable).token_by_index(index.into())
+    }
+
+    fn token_of_owner_by_index(self: @EthrxFacade, owner: ContractAddress, index: usize) -> u256 {
+        (*self.erc721_enumerable).token_of_owner_by_index(owner, index.into())
+    }
+
+    fn balance_of(self: @EthrxFacade, owner: ContractAddress) -> u256 {
+        (*self.erc721).balance_of(owner)
     }
     fn total_artifacts(self: @EthrxFacade) -> felt252 {
         (*self.dispatcher).total_artifacts()

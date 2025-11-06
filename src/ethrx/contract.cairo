@@ -7,6 +7,7 @@ pub mod Ethrx {
     use openzeppelin_token::erc20::interface::{ERC20ABIDispatcher, ERC20ABIDispatcherTrait};
     use openzeppelin_token::erc721::ERC721Component;
     use openzeppelin_token::erc721::ERC721Component::Errors as ERC721Errors;
+    use openzeppelin_token::erc721::extensions::ERC721EnumerableComponent;
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
@@ -15,6 +16,9 @@ pub mod Ethrx {
     use crate::types::engraving::{Artifact, Engraving, INITIAL_ENGRAVINGS};
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
+    component!(
+        path: ERC721EnumerableComponent, storage: erc721_enumerable, event: ERC721EnumerableEvent,
+    );
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -30,6 +34,11 @@ pub mod Ethrx {
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
 
     #[abi(embed_v0)]
+    impl ERC721EnumerableImpl =
+        ERC721EnumerableComponent::ERC721EnumerableImpl<ContractState>;
+    impl ERC721EnumberableInternalImpl = ERC721EnumerableComponent::InternalImpl<ContractState>;
+
+    #[abi(embed_v0)]
     impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
 
     #[storage]
@@ -37,7 +46,6 @@ pub mod Ethrx {
         mint_token: ContractAddress,
         mint_price: u256,
         max_supply: u256,
-        total_tokens: u256,
         artifact_nonces: felt252,
         token_artifact_ids: Map<u256, felt252>,
         tag_registry: Map<usize, felt252>,
@@ -50,6 +58,8 @@ pub mod Ethrx {
         ownable: OwnableComponent::Storage,
         #[substorage(v0)]
         erc721: ERC721Component::Storage,
+        #[substorage(v0)]
+        erc721_enumerable: ERC721EnumerableComponent::Storage,
         #[substorage(v0)]
         src5: SRC5Component::Storage,
     }
@@ -82,6 +92,8 @@ pub mod Ethrx {
         OwnableEvent: OwnableComponent::Event,
         #[flat]
         ERC721Event: ERC721Component::Event,
+        #[flat]
+        ERC721EnumerableEvent: ERC721EnumerableComponent::Event,
         #[flat]
         SRC5Event: SRC5Component::Event,
     }
@@ -116,8 +128,10 @@ pub mod Ethrx {
             // @dev If this is a transfer that saves the artifact, do not wipe it
             if !self.artifact_saving.entry(token_id).read() {
                 self._wipe_artifact(token_id);
-                return;
             }
+
+            // @dev Handle ERC721Enumerable logic
+            self.erc721_enumerable.before_update(to, token_id);
         }
     }
 
@@ -134,10 +148,6 @@ pub mod Ethrx {
 
         fn max_supply(self: @ContractState) -> u256 {
             self.max_supply.read()
-        }
-
-        fn total_supply(self: @ContractState) -> u256 {
-            self.total_tokens.read()
         }
 
         fn total_artifacts(self: @ContractState) -> felt252 {
@@ -370,7 +380,7 @@ pub mod Ethrx {
         }
 
         fn _mint(ref self: ContractState, to: ContractAddress, amount: u256, is_paying: bool) {
-            let total_tokens = self.total_tokens.read();
+            let total_tokens = self.erc721_enumerable.total_supply();
 
             let mut cost: u256 = 0;
             for i in 0..amount {
@@ -380,7 +390,6 @@ pub mod Ethrx {
                     if is_paying {
                         cost += self.mint_price.read();
                     }
-                    self.total_tokens.write(new_token_id);
                 }
             }
 

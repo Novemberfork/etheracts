@@ -20,7 +20,6 @@ pub trait IEthrx<TState> {
     fn mint_price(self: @TState) -> u256;
     fn mint_token(self: @TState) -> ContractAddress;
     fn max_supply(self: @TState) -> u256;
-    fn total_supply(self: @TState) -> u256;
 
     fn total_artifacts(self: @TState) -> felt252;
     fn token_ids_to_artifact_ids(self: @TState, token_ids: Array<u256>) -> Array<felt252>;
