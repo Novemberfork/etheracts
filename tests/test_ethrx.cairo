@@ -33,14 +33,36 @@ fn test_ethrx_constructor_args() {
 #[test]
 fn test_ethrx_constructor() {
     let (ethrx, _) = setup();
-    assert!(ethrx.total_supply() == 11, "initial total supply should be 11");
+    assert!(ethrx.total_supply() == 111, "initial total supply should be 111");
+
+    // Verify all tokens 1-111 are owned by OWNER
+    for i in 1..=111_usize {
+        assert!(ethrx.owner_of(i.into()) == OWNER, "token {i} should be owned by OWNER");
+    }
+
+    // Verify tokens 1-11 have initial engravings
     for i in 1..=11_usize {
-        assert!(ethrx.owner_of(i.into()) == OWNER, "initial token owner should be the deployer");
         assert!(
-            ethrx.token_id_to_artifact_id(i.into()) == i.into(),
-            "initial token artifact id should match token id",
+            ethrx.get_artifact(i.into()) == INITIAL_ENGRAVINGS::INITIAL_ARTIFACT(i.into()),
+            "token {i} should have initial artifact",
         );
-        // @dev !# finish once engravings moved in
+    }
+
+    // Verify tokens 12-111 are unengraved (all tags should be empty)
+    for i in 12..=111_usize {
+        let artifact = ethrx.get_artifact(i.into());
+        assert!(artifact.collection.len() == 5, "token {i} should have all 5 official tags");
+
+        // All engravings should have empty data
+        for engraving in artifact.collection {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(
+                data_ba == "", "token {i} tag {} should be empty (not engraved)", engraving.tag,
+            );
+        }
+    }
+}
+
         assert!(
             ethrx.get_artifact(i.into()) == INITIAL_ENGRAVINGS::INITIAL_ARTIFACT(i.into()),
             "initial artifact mismatch",
