@@ -1379,3 +1379,245 @@ fn test_transfer_batch_matched_lengths_success() {
     assert!(ethrx.balance_of(BOB) == 3, "BOB should have 3 tokens");
 }
 
+/// Promo/Marketing Batch Transfer Tests (tokens 12-111) ///
+
+#[test]
+fn test_promo_batch_transfer_keep_engraved_tokens() {
+    let (ethrx, _) = setup();
+
+    // OWNER keeps tokens 1-11 (engraved), transfers 12-111 (unengraved) for promo
+    let mut tokens_to_transfer = array![];
+    let mut recipients = array![];
+
+    // Build arrays for tokens 12-111
+    for i in 12..=111_usize {
+        tokens_to_transfer.append(i.into());
+        recipients.append(ALICE); // Transfer all to ALICE for simplicity
+    }
+
+    // Verify initial state
+    assert!(ethrx.balance_of(OWNER) == 111, "OWNER should have 111 tokens initially");
+    assert!(ethrx.balance_of(ALICE) == 0, "ALICE should have 0 tokens initially");
+
+    // Verify tokens 1-11 are engraved
+    for i in 1..=11_usize {
+        let artifact = ethrx.get_artifact(i.into());
+        let expected = INITIAL_ENGRAVINGS::INITIAL_ARTIFACT(i.into());
+        assert!(artifact == expected, "token {i} should have initial engraving");
+    }
+
+    // OWNER transfers tokens 12-111 to ALICE using batch transfer
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.transfer_batch_direct(recipients, tokens_to_transfer);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Verify OWNER kept tokens 1-11
+    assert!(ethrx.balance_of(OWNER) == 11, "OWNER should have kept 11 tokens");
+    for i in 1..=11_usize {
+        assert!(ethrx.owner_of(i.into()) == OWNER, "token {i} should still be owned by OWNER");
+    }
+
+    // Verify ALICE received tokens 12-111
+    assert!(ethrx.balance_of(ALICE) == 100, "ALICE should have received 100 tokens");
+    for i in 12..=111_usize {
+        assert!(ethrx.owner_of(i.into()) == ALICE, "token {i} should be owned by ALICE");
+    }
+
+    // Verify engraved tokens 1-11 are still intact
+    for i in 1..=11_usize {
+        let artifact = ethrx.get_artifact(i.into());
+        let expected = INITIAL_ENGRAVINGS::INITIAL_ARTIFACT(i.into());
+        assert!(artifact == expected, "token {i} engraving should be preserved");
+    }
+
+    // Verify unengraved tokens 12-111 are still empty
+    for i in 12..=111_usize {
+        let artifact = ethrx.get_artifact(i.into());
+        for engraving in artifact.collection {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(data_ba == "", "token {i} should remain unengraved after transfer");
+        }
+    }
+}
+
+#[test]
+fn test_promo_batch_transfer_enumerable_state() {
+    let (ethrx, _) = setup();
+
+    // Transfer tokens 12-50 to ALICE, 51-100 to BOB, keep 101-111 with OWNER
+    let mut tokens_alice = array![];
+    let mut tokens_bob = array![];
+    let mut recipients_alice = array![];
+    let mut recipients_bob = array![];
+
+    for i in 12..=50_usize {
+        tokens_alice.append(i.into());
+        recipients_alice.append(ALICE);
+    }
+
+    for i in 51..=100_usize {
+        tokens_bob.append(i.into());
+        recipients_bob.append(BOB);
+    }
+
+    // Transfer to ALICE
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.transfer_batch_direct(recipients_alice, tokens_alice);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Transfer to BOB
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.transfer_batch_direct(recipients_bob, tokens_bob);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Verify balances
+    // OWNER starts with 111 tokens, transfers 39 (12-50) to ALICE and 50 (51-100) to BOB
+    // OWNER keeps: 1-11 (11 tokens) + 101-111 (11 tokens) = 22 tokens
+    assert!(ethrx.balance_of(OWNER) == 22, "OWNER should have 22 tokens (1-11, 101-111)");
+    assert!(ethrx.balance_of(ALICE) == 39, "ALICE should have 39 tokens (12-50)");
+    assert!(ethrx.balance_of(BOB) == 50, "BOB should have 50 tokens (51-100)");
+
+    // Verify enumerable state - total supply unchanged
+    assert!(ethrx.total_supply() == 111, "total supply should remain 111");
+
+    // Verify token_by_index still works
+    for i in 0..111_usize {
+        let token_id = ethrx.token_by_index(i);
+        assert!(token_id == (i + 1).into(), "token_by_index({i}) should return {}", i + 1);
+    }
+
+    // Verify OWNER's tokens via enumeration
+    // OWNER has 22 tokens: 1-11 and 101-111
+    // Due to pop-and-swap during transfers, the order may not be sequential
+    assert!(ethrx.token_of_owner_by_index(OWNER, 0) == 1, "OWNER's first token should be 1");
+    assert!(ethrx.token_of_owner_by_index(OWNER, 10) == 11, "OWNER's 11th token should be 11");
+    // After transferring tokens 12-100, OWNER's remaining tokens are 1-11 and 101-111
+    // The 12th token (index 11) should be one of 101-111, but due to pop-and-swap it might be 111
+    let owner_token_11 = ethrx.token_of_owner_by_index(OWNER, 11);
+    assert!(
+        owner_token_11 >= 101 && owner_token_11 <= 111,
+        "OWNER's 12th token should be between 101-111",
+    );
+
+    // Verify ALICE's tokens via enumeration
+    assert!(ethrx.token_of_owner_by_index(ALICE, 0) == 12, "ALICE's first token should be 12");
+    assert!(ethrx.token_of_owner_by_index(ALICE, 38) == 50, "ALICE's last token should be 50");
+
+    // Verify BOB's tokens via enumeration
+    assert!(ethrx.token_of_owner_by_index(BOB, 0) == 51, "BOB's first token should be 51");
+    assert!(ethrx.token_of_owner_by_index(BOB, 49) == 100, "BOB's last token should be 100");
+}
+
+#[test]
+fn test_promo_batch_transfer_multiple_recipients() {
+    let (ethrx, _) = setup();
+
+    // Simulate distributing tokens 12-20 to different recipients for promo
+    let tokens = array![12, 13, 14, 15, 16, 17, 18, 19, 20];
+    let recipients = array![ALICE, BOB, ALICE, BOB, ALICE, BOB, ALICE, BOB, ALICE];
+
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.transfer_batch_direct(recipients, tokens);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Verify distribution
+    assert!(ethrx.owner_of(12) == ALICE, "token 12 should go to ALICE");
+    assert!(ethrx.owner_of(13) == BOB, "token 13 should go to BOB");
+    assert!(ethrx.owner_of(14) == ALICE, "token 14 should go to ALICE");
+    assert!(ethrx.owner_of(15) == BOB, "token 15 should go to BOB");
+    assert!(ethrx.owner_of(16) == ALICE, "token 16 should go to ALICE");
+    assert!(ethrx.owner_of(17) == BOB, "token 17 should go to BOB");
+    assert!(ethrx.owner_of(18) == ALICE, "token 18 should go to ALICE");
+    assert!(ethrx.owner_of(19) == BOB, "token 19 should go to BOB");
+    assert!(ethrx.owner_of(20) == ALICE, "token 20 should go to ALICE");
+
+    assert!(ethrx.balance_of(ALICE) == 5, "ALICE should have 5 tokens");
+    assert!(ethrx.balance_of(BOB) == 4, "BOB should have 4 tokens");
+    assert!(ethrx.balance_of(OWNER) == 102, "OWNER should have 102 tokens remaining");
+
+    // Verify all transferred tokens remain unengraved
+    for i in 12..=20_usize {
+        let artifact = ethrx.get_artifact(i.into());
+        for engraving in artifact.collection {
+            let data_ba: ByteArray = engraving.data.clone().into();
+            assert!(data_ba == "", "token {i} should remain unengraved");
+        }
+    }
+}
+
+#[test]
+fn test_promo_batch_transfer_preserve_engraved_tokens() {
+    let (ethrx, _) = setup();
+
+    // Transfer a large batch of unengraved tokens (12-111)
+    let mut tokens = array![];
+    let mut recipients = array![];
+
+    for i in 12..=111_usize {
+        tokens.append(i.into());
+        recipients.append(ALICE);
+    }
+
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.transfer_batch_direct(recipients, tokens);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Verify tokens 1-11 (engraved) are still with OWNER and intact
+    assert!(ethrx.balance_of(OWNER) == 11, "OWNER should have 11 engraved tokens");
+
+    for i in 1..=11_usize {
+        assert!(ethrx.owner_of(i.into()) == OWNER, "token {i} should be with OWNER");
+
+        // Verify engraving is preserved
+        let artifact = ethrx.get_artifact(i.into());
+        let expected = INITIAL_ENGRAVINGS::INITIAL_ARTIFACT(i.into());
+        assert!(artifact == expected, "token {i} engraving should be preserved");
+
+        // Verify artifact_id hasn't changed (no wipe occurred)
+        let artifact_id = ethrx.token_id_to_artifact_id(i.into());
+        assert!(artifact_id == i.into(), "token {i} artifact_id should remain {i}");
+    }
+}
+
+#[test]
+fn test_promo_batch_transfer_large_batch() {
+    let (ethrx, _) = setup();
+
+    // Test transferring all 100 unengraved tokens in one batch
+    let mut tokens = array![];
+    let mut recipients = array![];
+
+    for i in 12..=111_usize {
+        tokens.append(i.into());
+        recipients.append(ALICE);
+    }
+
+    let owner_balance_before = ethrx.balance_of(OWNER);
+    let alice_balance_before = ethrx.balance_of(ALICE);
+
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.transfer_batch_direct(recipients, tokens);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Verify balances
+    assert!(
+        ethrx.balance_of(OWNER) == owner_balance_before - 100,
+        "OWNER should have transferred 100 tokens",
+    );
+    assert!(
+        ethrx.balance_of(ALICE) == alice_balance_before + 100,
+        "ALICE should have received 100 tokens",
+    );
+
+    // Verify enumerable state is correct
+    assert!(ethrx.total_supply() == 111, "total supply should remain 111");
+    assert!(ethrx.balance_of(OWNER) == 11, "OWNER should have 11 tokens");
+    assert!(ethrx.balance_of(ALICE) == 100, "ALICE should have 100 tokens");
+
+    // Verify all tokens are still enumerable
+    for i in 0..111_usize {
+        let token_id = ethrx.token_by_index(i);
+        assert!(token_id == (i + 1).into(), "token_by_index({i}) should return {}", i + 1);
+    }
+}
+
