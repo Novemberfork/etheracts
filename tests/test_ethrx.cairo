@@ -84,10 +84,39 @@ fn test_constructor_enumerable_state() {
     }
 }
 
+#[test]
+fn test_constructor_engraved_tokens_details() {
+    let (ethrx, _) = setup();
+
+    // Verify tokens 1-11 have proper engravings with non-empty data
+    for i in 1..=11_usize {
+        let artifact = ethrx.get_artifact(i.into());
+        let expected_artifact = INITIAL_ENGRAVINGS::INITIAL_ARTIFACT(i.into());
+
+        // Verify artifact structure matches
         assert!(
-            ethrx.get_artifact(i.into()) == INITIAL_ENGRAVINGS::INITIAL_ARTIFACT(i.into()),
-            "initial artifact mismatch",
+            artifact.collection.len() == expected_artifact.collection.len(),
+            "token {i} should have correct number of engravings",
         );
+
+        // Verify each engraving matches
+        for (engraving, expected_engraving) in artifact
+            .collection
+            .into_iter()
+            .zip(expected_artifact.collection) {
+            assert!(
+                engraving.tag == expected_engraving.tag,
+                "token {i} should have tag {}",
+                expected_engraving.tag,
+            );
+            let data_ba: ByteArray = engraving.data.clone().into();
+            let expected_data_ba: ByteArray = expected_engraving.data.clone().into();
+            assert!(
+                data_ba == expected_data_ba,
+                "token {i} tag {} should match expected data",
+                engraving.tag,
+            );
+        }
     }
 }
 
