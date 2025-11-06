@@ -63,6 +63,27 @@ fn test_ethrx_constructor() {
     }
 }
 
+#[test]
+fn test_constructor_enumerable_state() {
+    let (ethrx, _) = setup();
+
+    // Verify total supply
+    assert!(ethrx.total_supply() == 111, "total supply should be 111");
+
+    // Verify all tokens are enumerable via token_by_index
+    for i in 0..111_usize {
+        let token_id = ethrx.token_by_index(i);
+        assert!(token_id == (i + 1).into(), "token_by_index({i}) should return {}", i + 1);
+    }
+
+    // Verify OWNER has all 111 tokens via token_of_owner_by_index
+    assert!(ethrx.balance_of(OWNER) == 111, "OWNER should have 111 tokens");
+    for i in 0..111_usize {
+        let token_id = ethrx.token_of_owner_by_index(OWNER, i);
+        assert!(token_id == (i + 1).into(), "OWNER's token at index {i} should be {}", i + 1);
+    }
+}
+
         assert!(
             ethrx.get_artifact(i.into()) == INITIAL_ENGRAVINGS::INITIAL_ARTIFACT(i.into()),
             "initial artifact mismatch",
