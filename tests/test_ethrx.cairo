@@ -11,7 +11,7 @@ use snforge_std::{
 };
 use crate::setup::{
     ALICE, BASE_URI, BOB, BYSTANDER, CONTRACT_URI, MAX_SUPPLY, MINT_PRICE, NAME, OWNER, SYMBOL,
-    setup,
+    setup, setup_without_enabling_minting,
 };
 use crate::utils::EthrxFacadeImpl;
 
@@ -1650,5 +1650,129 @@ fn test_promo_batch_transfer_large_batch() {
         let token_id = ethrx.token_by_index(i);
         assert!(token_id == (i + 1).into(), "token_by_index({i}) should return {}", i + 1);
     }
+}
+
+/// is_minting Tests ///
+
+#[test]
+fn test_is_minting_disabled_by_default() {
+    let (ethrx, _) = setup_without_enabling_minting();
+
+    // Verify minting is disabled by default
+    assert!(!ethrx.is_minting(), "Minting should be disabled by default");
+}
+
+#[test]
+fn test_initial_111_tokens_still_minted_during_deployment() {
+    let (ethrx, _) = setup_without_enabling_minting();
+
+    // Verify that the first 111 tokens are still minted during deployment
+    assert!(ethrx.total_supply() == 111, "initial total supply should be 111");
+    assert!(ethrx.is_minting() == false, "Minting should be disabled");
+
+    // Verify all tokens 1-111 are owned by OWNER
+    for i in 1..=111_usize {
+        assert!(ethrx.owner_of(i.into()) == OWNER, "token {i} should be owned by OWNER");
+    }
+
+    // Verify tokens 1-11 have initial engravings
+    for i in 1..=11_usize {
+        assert!(
+            ethrx.get_artifact(i.into()) == INITIAL_ENGRAVINGS::INITIAL_ARTIFACT(i.into()),
+            "token {i} should have initial artifact",
+        );
+    }
+}
+
+#[test]
+#[should_panic]
+fn test_minting_fails_when_disabled() {
+    let (ethrx, erc20) = setup_without_enabling_minting();
+
+    // Verify minting is disabled
+    assert!(!ethrx.is_minting(), "Minting should be disabled");
+
+    // Attempt to mint should fail
+    ethrx.mint_batch_star(array![ALICE], array![1]);
+}
+
+#[test]
+fn test_set_minting_owner_only() {
+    let (ethrx, _) = setup_without_enabling_minting();
+
+    // Verify minting is disabled initially
+    assert!(!ethrx.is_minting(), "Minting should be disabled initially");
+
+    // Owner should be able to enable minting
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.set_minting(true);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    assert!(ethrx.is_minting(), "Minting should be enabled after owner sets it");
+
+    // Owner should be able to disable minting
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.set_minting(false);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    assert!(!ethrx.is_minting(), "Minting should be disabled after owner sets it");
+}
+
+#[test]
+#[should_panic]
+fn test_set_minting_non_owner_fails() {
+    let (ethrx, _) = setup_without_enabling_minting();
+
+    // Non-owner should not be able to set minting - should panic
+    start_cheat_caller_address(ethrx.contract_address, ALICE);
+    ethrx.set_minting(true);
+    stop_cheat_caller_address(ethrx.contract_address);
+}
+
+#[test]
+fn test_minting_works_after_enabled() {
+    let (ethrx, erc20) = setup_without_enabling_minting();
+
+    // Verify minting is disabled initially
+    assert!(!ethrx.is_minting(), "Minting should be disabled initially");
+
+    // Enable minting as owner
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.set_minting(true);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    assert!(ethrx.is_minting(), "Minting should be enabled");
+
+    // Now minting should work
+    let total_supply_before = ethrx.total_supply();
+    ethrx.mint_batch_star(array![ALICE], array![1]);
+
+    assert!(
+        ethrx.total_supply() == total_supply_before + 1,
+        "Total supply should increase after minting",
+    );
+    assert!(ethrx.owner_of(total_supply_before + 1) == ALICE, "New token should be owned by ALICE");
+}
+
+#[test]
+#[should_panic]
+fn test_minting_fails_after_disabled() {
+    let (ethrx, erc20) = setup_without_enabling_minting();
+
+    // Enable minting first
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.set_minting(true);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Mint a token to verify it works
+    ethrx.mint_batch_star(array![ALICE], array![1]);
+
+    // Disable minting
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.set_minting(false);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    // Minting should fail now
+    ethrx.mint_batch_star(array![BOB], array![1]);
 }
 

@@ -72,6 +72,11 @@ pub impl EthrxFacadeImpl of EthrxTrait {
     fn max_supply(self: @EthrxFacade) -> u256 {
         (*self.dispatcher).max_supply()
     }
+
+    fn is_minting(self: @EthrxFacade) -> bool {
+        (*self.dispatcher).is_minting()
+    }
+
     fn total_supply(self: @EthrxFacade) -> u256 {
         (*self.erc721_enumerable).total_supply()
     }
@@ -335,5 +340,9 @@ pub impl EthrxFacadeImpl of EthrxTrait {
         new_tags: Option<Array<felt252>>,
     ) {
         self.dispatcher.set_tags(modify_tags, new_tags);
+    }
+
+    fn set_minting(self: @EthrxFacade, enabled: bool) {
+        self.dispatcher.set_minting(enabled);
     }
 }

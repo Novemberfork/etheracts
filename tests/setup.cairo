@@ -18,7 +18,8 @@ pub const BOB: ContractAddress = 'bob'.try_into().unwrap();
 pub const BYSTANDER: ContractAddress = 'bystander'.try_into().unwrap();
 pub const OWNER: ContractAddress = 'owner'.try_into().unwrap();
 pub const MINT_PRICE: u256 = 100_000_000;
-pub const MAX_SUPPLY: u256 = 211; // Must be > 111 to allow minting in tests (111 minted in constructor)
+pub const MAX_SUPPLY: u256 =
+    211; // Must be > 111 to allow minting in tests (111 minted in constructor)
 pub fn NAME() -> ByteArray {
     "Etheracts"
 }
@@ -84,6 +85,17 @@ pub fn deploy_ethrx(mint_token: ContractAddress) -> ContractAddress {
 }
 
 pub fn setup() -> (EthrxFacade, IERC20Dispatcher) {
+    let (ethrx, token) = setup_without_enabling_minting();
+
+    // Enable minting for existing tests (to avoid rewriting them)
+    start_cheat_caller_address(ethrx.contract_address, OWNER);
+    ethrx.set_minting(true);
+    stop_cheat_caller_address(ethrx.contract_address);
+
+    (ethrx, token)
+}
+
+pub fn setup_without_enabling_minting() -> (EthrxFacade, IERC20Dispatcher) {
     let token = deploy_erc20("Mock Token", "NF");
     let ethrx_address = deploy_ethrx(token.contract_address);
     let ethrx = EthrxFacadeImpl::new(ethrx_address);
@@ -93,6 +105,7 @@ pub fn setup() -> (EthrxFacade, IERC20Dispatcher) {
     mint(token.contract_address, BOB, 1111 * (ethrx.mint_price() * ethrx.max_supply()));
     mint(token.contract_address, BYSTANDER, 1111 * (ethrx.mint_price() * ethrx.max_supply()));
 
+    // Do NOT enable minting - used for testing disabled minting logic
     (ethrx, token)
 }
 
