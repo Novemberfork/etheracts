@@ -28,6 +28,7 @@ fn test_ethrx_constructor_args() {
     assert!(ethrx.mint_token() == erc20.contract_address, "mint token mismatch");
     assert!(ethrx.mint_price() == MINT_PRICE, "mint price mismatch");
     assert!(ethrx.max_supply() == MAX_SUPPLY, "max supply mismatch");
+    assert!(ethrx.version() == 1, "version wrong");
 }
 
 #[test]
