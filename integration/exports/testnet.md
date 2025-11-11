@@ -129,3 +129,33 @@
 
 ---
 
+## Deployment - 2025-11-11 12:55:17
+
+- **Contract**: Ethrx
+- **Class Hash**: `0xaffc1fc549c984af8e77833d7ace76376b93a6cba250109d981254ea0a4e03`
+- **Deployed Address**: `0x332b22d0c896b839998007d619e5340f133db829e3d7b50e0a4706e8bcd2ec2`
+- **Transaction Hash**: `0x629d9bb3182f8e07c5ccb2b7210230040cb4cbba0ef4297b3e7bad8c33b781b`
+- **Timestamp**: 2025-11-11 12:55:17
+
+---
+
+## Deployment - 2025-11-11 14:52:57
+
+- **Contract**: Ethrx
+- **Class Hash**: `0x3f9e0225d0cc38a91584b09e61efc5a94ef05b2892ac28bae4495d0c6b8a39c`
+- **Deployed Address**: `0x6a4a5f8f88e2b497758017f310dd17ce71453f53ba7582d64b4fb6e08a2120d`
+- **Transaction Hash**: `0x7ccb5faafa3ee816a2cafa27970776a38726d0d8710fe894ee7023183887dc3`
+- **Timestamp**: 2025-11-11 14:52:57
+
+---
+
+## Deployment - 2025-11-11 15:28:44
+
+- **Contract**: Ethrx
+- **Class Hash**: `0x17a2feb78d992256bedf6cc0cc0305c0ce6147a75211cbb7ebcacf696c07ba6`
+- **Deployed Address**: `0x262ce729bdebdd111c9f83ac87f6f5d1eb9afeb49a2d0153dbd7adba7abe394`
+- **Transaction Hash**: `0x73920612d35bb12687e1884dc7d7cbe474d7d1f359e3a87e1c563253aa3274a`
+- **Timestamp**: 2025-11-11 15:28:44
+
+---
+

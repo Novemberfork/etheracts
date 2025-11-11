@@ -5,6 +5,20 @@ export const ABI = [
     "interface_name": "etheracts::ethrx::interface::IEthrx"
   },
   {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
     "type": "struct",
     "name": "core::integer::u256",
     "members": [
@@ -106,6 +120,17 @@ export const ABI = [
     "type": "interface",
     "name": "etheracts::ethrx::interface::IEthrx",
     "items": [
+      {
+        "type": "function",
+        "name": "is_minting",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "view"
+      },
       {
         "type": "function",
         "name": "mint_price",
@@ -228,17 +253,6 @@ export const ABI = [
       },
       {
         "type": "function",
-        "name": "official_tags",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::array::Array::<core::felt252>"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
         "name": "contract_uri",
         "inputs": [],
         "outputs": [
@@ -255,6 +269,28 @@ export const ABI = [
         "outputs": [
           {
             "type": "core::byte_array::ByteArray"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "official_tags",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::array::Array::<core::felt252>"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "version",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u32"
           }
         ],
         "state_mutability": "view"
@@ -377,6 +413,18 @@ export const ABI = [
       },
       {
         "type": "function",
+        "name": "set_minting",
+        "inputs": [
+          {
+            "name": "enabled",
+            "type": "core::bool"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
         "name": "set_tags",
         "inputs": [
           {
@@ -386,6 +434,18 @@ export const ABI = [
           {
             "name": "new_tags",
             "type": "core::option::Option::<core::array::Array::<core::felt252>>"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "upgrade_contract",
+        "inputs": [
+          {
+            "name": "new_class_hash",
+            "type": "core::starknet::class_hash::ClassHash"
           }
         ],
         "outputs": [],
@@ -446,20 +506,6 @@ export const ABI = [
       {
         "name": "snapshot",
         "type": "@core::array::Array::<core::felt252>"
-      }
-    ]
-  },
-  {
-    "type": "enum",
-    "name": "core::bool",
-    "variants": [
-      {
-        "name": "False",
-        "type": "()"
-      },
-      {
-        "name": "True",
-        "type": "()"
       }
     ]
   },
@@ -899,6 +945,30 @@ export const ABI = [
   },
   {
     "type": "event",
+    "name": "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Upgraded",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "class_hash",
+        "type": "core::starknet::class_hash::ClassHash",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "Upgraded",
+        "type": "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Upgraded",
+        "kind": "nested"
+      }
+    ]
+  },
+  {
+    "type": "event",
     "name": "openzeppelin_token::erc721::erc721::ERC721Component::Transfer",
     "kind": "struct",
     "members": [
@@ -1020,6 +1090,11 @@ export const ABI = [
       {
         "name": "OwnableEvent",
         "type": "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+        "kind": "flat"
+      },
+      {
+        "name": "UpgradeableEvent",
+        "type": "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Event",
         "kind": "flat"
       },
       {
