@@ -61,6 +61,7 @@ pub mod Ethrx {
         artifact_saving: Map<u256, bool>,
         contract_uri: ByteArray,
         version: usize,
+        initialized: Map<usize, bool>,
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
         #[substorage(v0)]
@@ -79,6 +80,8 @@ pub mod Ethrx {
             owner, name, symbol, base_uri, contract_uri, mint_token, mint_price, max_supply,
         } = args;
 
+        self.version.write(1);
+
         self.ownable.initializer(owner);
         self.erc721.initializer(name, symbol, base_uri);
 
@@ -89,8 +92,6 @@ pub mod Ethrx {
         self.max_supply.write(max_supply);
 
         self._mint_and_engrave_initial_artifacts(owner);
-
-        self.version.write(1);
     }
 
     #[event]
@@ -366,13 +367,29 @@ pub mod Ethrx {
 
         fn upgrade_contract(ref self: ContractState, new_class_hash: ClassHash) {
             self._only_owner();
+            self.version.write(self.version.read() + 1);
             self.upgradeable.upgrade(new_class_hash);
-            self.version.write(self.version.read());
         }
     }
 
     #[generate_trait]
     impl InternalImpl of EthrxInternalTrait {
+        fn _initializer(ref self: ContractState, version: usize) {
+            let current_version = self.version.read();
+
+            assert!(
+                !self.initialized.entry(version).read(),
+                "Contract V{} is already initialized",
+                version,
+            );
+            assert!(
+                version == current_version,
+                "Initializer called incorrectly (expected: {current_version}, got: {version})",
+            );
+
+            self.initialized.entry(version).write(true);
+        }
+
         fn _get_artifact_nonces(
             self: @ContractState, artifact_id: felt252, tags: @Array<felt252>,
         ) -> Array<usize> {

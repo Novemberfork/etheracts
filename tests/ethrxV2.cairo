@@ -82,6 +82,7 @@ pub mod EthrxV2 {
         artifact_saving: Map<u256, bool>,
         contract_uri: ByteArray,
         version: usize,
+        initialized: Map<usize, bool>,
         /// V2 ///
         new_feature: felt252,
         /// V1 ///
@@ -180,7 +181,7 @@ pub mod EthrxV2 {
 
         fn initializerV2(ref self: ContractState, args: InitializerV2Args) {
             self._only_owner();
-            self._validate_and_update_version(2);
+            self._initializer(2);
             self.new_feature.write(args.new_feature);
         }
 
@@ -409,26 +410,30 @@ pub mod EthrxV2 {
 
         fn upgrade_contract(ref self: ContractState, new_class_hash: ClassHash) {
             self._only_owner();
+            self.version.write(self.version.read() + 1);
             self.upgradeable.upgrade(new_class_hash);
-            self.version.write(self.version.read());
         }
     }
 
     #[generate_trait]
     impl InternalImpl of EthrxInternalTrait {
-        /// V2 ///
-        fn _validate_and_update_version(ref self: ContractState, new_version: usize) {
+        /// V1 ///
+        fn _initializer(ref self: ContractState, version: usize) {
             let current_version = self.version.read();
+
             assert!(
-                new_version == current_version + 1,
-                "Invalid contract version (expected: {}, got: {})",
-                current_version + 1,
-                new_version,
+                current_version == version,
+                "Initializer called incorrectly (expected: {current_version}, got: {version})",
             );
-            self.version.write(new_version);
+            assert!(
+                !self.initialized.entry(version).read(),
+                "Contract V{} is already initialized",
+                version,
+            );
+
+            self.initialized.entry(version).write(true);
         }
 
-        /// V1 ///
         fn _get_artifact_nonces(
             self: @ContractState, artifact_id: felt252, tags: @Array<felt252>,
         ) -> Array<usize> {
