@@ -17,6 +17,7 @@ pub struct ConstructorArgs {
 #[starknet::interface]
 pub trait IEthrx<TState> {
     /// READ ///
+    fn is_minting(self: @TState) -> bool;
     fn mint_price(self: @TState) -> u256;
     fn mint_token(self: @TState) -> ContractAddress;
     fn max_supply(self: @TState) -> u256;
@@ -61,6 +62,7 @@ pub trait IEthrx<TState> {
     fn set_contract_uri(ref self: TState, new_contract_uri: ByteArray);
     fn set_mint_price(ref self: TState, new_mint_price: u256);
     fn set_mint_token(ref self: TState, new_mint_token: ContractAddress);
+    fn set_minting(ref self: TState, enabled: bool);
     fn set_tags(
         ref self: TState,
         modify_tags: Option<Array<(usize, felt252)>>,

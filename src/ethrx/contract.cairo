@@ -43,6 +43,7 @@ pub mod Ethrx {
 
     #[storage]
     struct Storage {
+        is_minting: bool,
         mint_token: ContractAddress,
         mint_price: u256,
         max_supply: u256,
@@ -138,6 +139,10 @@ pub mod Ethrx {
     #[abi(embed_v0)]
     impl EthrxImpl of IEthrx<ContractState> {
         /// READ ///
+        fn is_minting(self: @ContractState) -> bool {
+            self.is_minting.read()
+        }
+
         fn mint_price(self: @ContractState) -> u256 {
             self.mint_price.read()
         }
@@ -221,6 +226,7 @@ pub mod Ethrx {
         /// WRITE ///
 
         fn mint(ref self: ContractState, amounts: Array<u256>, tos: Array<ContractAddress>) {
+            assert!(self.is_minting.read(), "Minting not enabled");
             assert!(amounts.len() == tos.len(), "Mismatched lengths");
 
             for (amount, to) in amounts.into_iter().zip(tos) {
@@ -291,6 +297,11 @@ pub mod Ethrx {
         fn set_mint_token(ref self: ContractState, new_mint_token: ContractAddress) {
             self._only_owner();
             self.mint_token.write(new_mint_token);
+        }
+
+        fn set_minting(ref self: ContractState, enabled: bool) {
+            self._only_owner();
+            self.is_minting.write(enabled);
         }
 
         fn set_tags(
