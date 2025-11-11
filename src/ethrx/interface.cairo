@@ -1,5 +1,5 @@
 use alexandria_bytes::BytesStore;
-use starknet::ContractAddress;
+use starknet::{ClassHash, ContractAddress};
 use crate::types::engraving::Artifact;
 
 #[derive(Drop, Serde)]
@@ -39,10 +39,12 @@ pub trait IEthrx<TState> {
         tag_nonces: Array<Array<usize>>,
     ) -> Array<Artifact>;
 
-    fn official_tags(self: @TState) -> Array<felt252>;
-
     fn contract_uri(self: @TState) -> ByteArray;
     fn contractURI(self: @TState) -> ByteArray;
+
+    fn official_tags(self: @TState) -> Array<felt252>;
+
+    fn version(self: @TState) -> usize;
 
     /// WRITE ///
     fn mint(ref self: TState, amounts: Array<u256>, tos: Array<ContractAddress>);
@@ -68,4 +70,5 @@ pub trait IEthrx<TState> {
         modify_tags: Option<Array<(usize, felt252)>>,
         new_tags: Option<Array<felt252>>,
     );
+    fn upgrade_contract(ref self: TState, new_class_hash: ClassHash);
 }

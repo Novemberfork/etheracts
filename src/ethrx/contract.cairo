@@ -8,10 +8,11 @@ pub mod Ethrx {
     use openzeppelin_token::erc721::ERC721Component;
     use openzeppelin_token::erc721::ERC721Component::Errors as ERC721Errors;
     use openzeppelin_token::erc721::extensions::ERC721EnumerableComponent;
+    use openzeppelin_upgrades::upgradeable::UpgradeableComponent;
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
-    use starknet::{ContractAddress, get_caller_address};
+    use starknet::{ClassHash, ContractAddress, get_caller_address};
     use crate::ethrx::interface::{ConstructorArgs, IEthrx};
     use crate::types::engraving::{Artifact, Engraving, INITIAL_ENGRAVINGS};
 
@@ -21,11 +22,15 @@ pub mod Ethrx {
     );
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
 
 
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
+
+    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
+
 
     #[abi(embed_v0)]
     impl ERC721Impl = ERC721Component::ERC721Impl<ContractState>;
@@ -55,8 +60,11 @@ pub mod Ethrx {
         artifacts: Map<(felt252, felt252, usize), Bytes>,
         artifact_saving: Map<u256, bool>,
         contract_uri: ByteArray,
+        version: usize,
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
+        #[substorage(v0)]
+        upgradeable: UpgradeableComponent::Storage,
         #[substorage(v0)]
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
@@ -81,6 +89,8 @@ pub mod Ethrx {
         self.max_supply.write(max_supply);
 
         self._mint_and_engrave_initial_artifacts(owner);
+
+        self.version.write(1);
     }
 
     #[event]
@@ -91,6 +101,8 @@ pub mod Ethrx {
         TagReregistered: TagReregistered,
         #[flat]
         OwnableEvent: OwnableComponent::Event,
+        #[flat]
+        UpgradeableEvent: UpgradeableComponent::Event,
         #[flat]
         ERC721Event: ERC721Component::Event,
         #[flat]
@@ -222,6 +234,19 @@ pub mod Ethrx {
             self.contract_uri.read()
         }
 
+        fn official_tags(self: @ContractState) -> Array<felt252> {
+            let total_registered_tags: u256 = self.total_registered_tags.read().into();
+            let mut tags: Array<felt252> = array![];
+            for i in 1..=total_registered_tags {
+                let tag = self.tag_registry.entry(i.try_into().unwrap()).read();
+                tags.append(tag);
+            }
+            tags
+        }
+
+        fn version(self: @ContractState) -> usize {
+            self.version.read()
+        }
 
         /// WRITE ///
 
@@ -339,14 +364,10 @@ pub mod Ethrx {
             }
         }
 
-        fn official_tags(self: @ContractState) -> Array<felt252> {
-            let total_registered_tags: u256 = self.total_registered_tags.read().into();
-            let mut tags: Array<felt252> = array![];
-            for i in 1..=total_registered_tags {
-                let tag = self.tag_registry.entry(i.try_into().unwrap()).read();
-                tags.append(tag);
-            }
-            tags
+        fn upgrade_contract(ref self: ContractState, new_class_hash: ClassHash) {
+            self._only_owner();
+            self.upgradeable.upgrade(new_class_hash);
+            self.version.write(self.version.read());
         }
     }
 
