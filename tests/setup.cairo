@@ -8,7 +8,8 @@ use snforge_std::{
     ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
     stop_cheat_caller_address,
 };
-use starknet::ContractAddress;
+use starknet::{ClassHash, ContractAddress};
+use crate::ethrxV2::InitializerV2Args;
 use crate::utils::{EthrxFacade, EthrxFacadeImpl};
 
 
@@ -84,6 +85,18 @@ pub fn deploy_ethrx(mint_token: ContractAddress) -> ContractAddress {
     //IEthrxABIDispatcher { contract_address: ethrx_address }
 }
 
+pub fn declare_v2() -> ClassHash {
+    let ethrx_contract = declare("EthrxV2").unwrap().contract_class();
+    let mut ctor_calldata: Array<felt252> = array![];
+
+    let args = InitializerV2Args { new_feature: 'hello world' };
+
+    args.serialize(ref ctor_calldata);
+
+    *ethrx_contract.class_hash
+}
+
+
 pub fn setup() -> (EthrxFacade, IERC20Dispatcher) {
     let (ethrx, token) = setup_without_enabling_minting();
 
@@ -108,4 +121,3 @@ pub fn setup_without_enabling_minting() -> (EthrxFacade, IERC20Dispatcher) {
     // Do NOT enable minting - used for testing disabled minting logic
     (ethrx, token)
 }
-
