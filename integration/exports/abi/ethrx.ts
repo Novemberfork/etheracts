@@ -413,7 +413,7 @@ export const ABI = [
       },
       {
         "type": "function",
-        "name": "set_minting",
+        "name": "set_is_minting",
         "inputs": [
           {
             "name": "enabled",

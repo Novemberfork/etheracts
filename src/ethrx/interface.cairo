@@ -64,7 +64,7 @@ pub trait IEthrx<TState> {
     fn set_contract_uri(ref self: TState, new_contract_uri: ByteArray);
     fn set_mint_price(ref self: TState, new_mint_price: u256);
     fn set_mint_token(ref self: TState, new_mint_token: ContractAddress);
-    fn set_minting(ref self: TState, enabled: bool);
+    fn set_is_minting(ref self: TState, enabled: bool);
     fn set_tags(
         ref self: TState,
         modify_tags: Option<Array<(usize, felt252)>>,

@@ -368,7 +368,7 @@ pub mod EthrxV2 {
             self.mint_token.write(new_mint_token);
         }
 
-        fn set_minting(ref self: ContractState, enabled: bool) {
+        fn set_is_minting(ref self: ContractState, enabled: bool) {
             self._only_owner();
             self.is_minting.write(enabled);
         }

@@ -361,7 +361,7 @@ pub impl EthrxFacadeImpl of EthrxTrait {
     }
 
     fn set_minting(self: @EthrxFacade, enabled: bool) {
-        self.dispatcher.set_minting(enabled);
+        self.dispatcher.set_is_minting(enabled);
     }
 }
 
@@ -689,6 +689,6 @@ pub impl EthrxFacadeImplV2 of EthrxV2Trait {
     }
 
     fn set_minting(self: @EthrxV2Facade, enabled: bool) {
-        self.dispatcherV1.set_minting(enabled);
+        self.dispatcherV1.set_is_minting(enabled);
     }
 }

@@ -7,11 +7,17 @@ pub struct Engraving {
     pub data: Bytes,
 }
 
+/// @dev i.e,
+/// 'X_HANDLE': "DegenDeveloper"
+/// 'GITHUB_HANDLE': "NovemberFork"
+/// 'URL': "https://novemberfork.io"
+/// 'ANYTHING_UNDER_31_CHARACTERS': "however long you want..."
 #[derive(Drop, Clone, Serde, PartialEq)]
 pub struct Artifact {
     pub collection: Array<Engraving>,
 }
 
+/// Tokens 1-11 are for myself
 pub mod INITIAL_ENGRAVINGS {
     use super::{Artifact, Engraving};
 
@@ -59,7 +65,7 @@ pub mod INITIAL_ENGRAVINGS {
             title = format!("Awareness");
             message = "";
         } else if token_id == 8 {
-            title = format!("Remembering We'll Never Be Those Kids Again");
+            title = format!("...");
             message = "";
         } else if token_id == 9 {
             title = format!("Free The Nip");
@@ -68,7 +74,7 @@ pub mod INITIAL_ENGRAVINGS {
             title = format!("Binary");
             message = "";
         } else {
-            title = format!("Flowers for my gf <3");
+            title = format!("<3");
             message = "";
         }
 
