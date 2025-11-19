@@ -6,6 +6,10 @@ cairo-version = "2.13.1"
 license = "MIT"
 description = "High resolution renders and an arbitrary registration protocol."
 authors = ["NovemberFork", "0xDegenDeveloper"]
+readme = "README.md"
+homepage = "https://etheracts.novemberfork.io/"
+repository = "https://github.com/NovemberFork/etheracts"
+
 
 [lib]
 
