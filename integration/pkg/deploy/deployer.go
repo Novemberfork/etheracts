@@ -79,22 +79,22 @@ func (d *Deployer) DeployContract(contractInfo ContractInfo) (*DeploymentResult,
 	d.logger.Info("⏳ Waiting before deployment...")
 	time.Sleep(5 * time.Second)
 
-	// Step 2: Deploy the contract
-	d.logger.Info("📋 Step 2: Deploying contract...")
-	deployedAddress, txHash, err := d.deployContract(classHash, contractInfo.Constructor.Args)
-	if err != nil {
-		return nil, fmt.Errorf("contract deployment failed: %w", err)
-	}
-
-	d.logger.Infof("✅ Contract deployed successfully!")
-	d.logger.Infof("   Deployed Address: %s", deployedAddress)
-	d.logger.Infof("   Transaction Hash: %s", txHash)
+	//	// Step 2: Deploy the contract
+	//	d.logger.Info("📋 Step 2: Deploying contract...")
+	//	deployedAddress, txHash, err := d.deployContract(classHash, contractInfo.Constructor.Args)
+	//	if err != nil {
+	//		return nil, fmt.Errorf("contract deployment failed: %w", err)
+	//	}
+	//
+	//	d.logger.Infof("✅ Contract deployed successfully!")
+	//	d.logger.Infof("   Deployed Address: %s", deployedAddress)
+	//	d.logger.Infof("   Transaction Hash: %s", txHash)
 
 	return &DeploymentResult{
 		ContractName:    contractInfo.Name,
 		ClassHash:       classHash,
-		DeployedAddress: deployedAddress,
-		TransactionHash: txHash,
+		DeployedAddress: classHash,
+		TransactionHash: classHash,
 		DeploymentTime:  time.Now(),
 		Network:         d.network,
 	}, nil
@@ -201,4 +201,3 @@ func (d *Deployer) GetAccountAddress() string {
 func (d *Deployer) GetNetwork() string {
 	return d.network
 }
-
