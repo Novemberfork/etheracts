@@ -122,7 +122,6 @@ Etheracts is an on-chain protocol and visually appealing collection that I creat
 
 ```rust
 Clusters:
-
  - 1: 233 (21.0%)
  - 2: 249 (22.4%)
  - 3: 212 (19.1%)
@@ -132,7 +131,6 @@ Clusters:
 > Total: 1111
 
 Node Size:
-
 - none: 568 (51.1%) <br />
 - small: 126 (11.3%) <br />
 - medium: 140 (12.6%) <br />
@@ -143,16 +141,15 @@ Node Size:
 > Total: 1111
 
 Path:
-
 - polar: 448 (40.3%)
 - spiral: 444 (40.0%)
 - linear: 115 (10.4%) 
 - still: 103 (9.3%) 
 - custom: 1 (0.1%) 
+
 > Total: 1111
 
 Path Periods:
-
 - 3: 86 (7.7%) 
 - 4: 111 (10.0%) 
 - 5: 132 (11.9%) 
@@ -170,7 +167,6 @@ Path Periods:
 > Total: 1111
 
 Polarity:
-
 - (+): 552 (49.7%)
 - (-): 558 (50.2%)
 - (+/-): 1 (0.1%)
@@ -181,6 +177,7 @@ Trail:
 - true: 870 (78.3%) 
 - false: 240 (21.6%) 
 - yes and no: 1 (0.1%) 
+
 > Total: 1111
 
 Wavelength:
