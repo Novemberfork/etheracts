@@ -213,8 +213,8 @@ During this time my brother had just dropped out of college and was crashing on 
 
 Rendering took ~13 hours using the setup below.
 
-<video src="assets/vid1.mp4" controls width="100%"></video>
+https://github.com/user/repo/assets/vid1.mp4
 
 Each log you see in the terminal is a single frame being generated and stitched into an mp4. The original renderings are each 4,000 x 4,000 pixels and take up a little over 100 gbs in total.
 
-<video src="assets/vid2.mp4" controls width="100%"></video>
+https://github.com/user/repo/assets/vid2.mp4
