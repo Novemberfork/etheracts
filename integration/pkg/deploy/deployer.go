@@ -28,7 +28,7 @@ type Deployer struct {
 // NewDeployer creates a new deployment instance
 func NewDeployer(rpcURL, network string, accountAddress, privateKey, publicKey string, logger *logrus.Logger) (*Deployer, error) {
 	// Initialize connection to RPC provider
-	client, err := rpc.NewProvider(rpcURL)
+	client, err := rpc.NewProvider(context.Background(), rpcURL)
 	if err != nil {
 		return nil, fmt.Errorf("error connecting to RPC provider: %w", err)
 	}
@@ -141,6 +141,16 @@ func (d *Deployer) declareContract(sierraPath, casmPath string) (string, error) 
 			// Use the proper ClassHash function from the hash package
 			classHash := hash.ClassHash(contractClass)
 			return classHash.String(), nil
+		}
+		// Check if it's a compiled class hash mismatch error
+		if strings.Contains(err.Error(), "Mismatch compiled class hash") || strings.Contains(err.Error(), "compiled class hash") {
+			classHash := hash.ClassHash(contractClass)
+			d.logger.Errorf("❌ Compiled class hash mismatch!")
+			d.logger.Errorf("   Class Hash: %s", classHash.String())
+			d.logger.Errorf("   This class hash already exists on the network with a different compiled class hash.")
+			d.logger.Errorf("   To declare a NEW class, you must modify the source code to change the class hash.")
+			d.logger.Errorf("   To re-declare the SAME class, ensure compilation settings match the original declaration.")
+			return "", fmt.Errorf("compiled class hash mismatch: class hash %s already exists with different compiled class hash. %w", classHash.String(), err)
 		}
 		return "", fmt.Errorf("failed to declare contract: %w", err)
 	}

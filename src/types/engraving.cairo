@@ -65,7 +65,7 @@ pub mod INITIAL_ENGRAVINGS {
             title = format!("Awareness");
             message = "";
         } else if token_id == 8 {
-            title = format!("...");
+            title = format!("..");
             message = "";
         } else if token_id == 9 {
             title = format!("Free The Nip");

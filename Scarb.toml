@@ -30,6 +30,9 @@ assert_macros = "2.13.1"
 sierra = true
 casm = true
 
+[cairo]
+sierra-replace-ids = true
+
 [scripts]
 test = "snforge test"
 
